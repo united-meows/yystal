@@ -1,6 +1,2 @@
-package pisi.unitedmeows.yystal.parallel;
-
-@FunctionalInterface
-public interface IState {
-	boolean check();
+package pisi.unitedmeows.yystal.parallel;public class IState {
 }

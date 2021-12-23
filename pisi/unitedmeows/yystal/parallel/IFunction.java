@@ -1,2 +1,6 @@
-package pisi.unitedmeows.yystal.parallel;public interface IFunction {
+package pisi.unitedmeows.yystal.parallel;
+
+@FunctionalInterface
+public interface IFunction<X> {
+	X run();
 }

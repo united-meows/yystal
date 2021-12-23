@@ -1,6 +1,8 @@
-package pisi.unitedmeows.yystal.utils;
+package pisi.unitedmeows.yystal.clazz;
 
-public class Mutex {
+import pisi.unitedmeows.yystal.utils.kThread;
+
+public class mutex {
 
 	private boolean locked;
 

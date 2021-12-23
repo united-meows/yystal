@@ -12,11 +12,18 @@ public class YFile {
 
 	private String path;
 	private File file;
-
-
+	
 	public YFile(String _path) {
-		path = _path;
-		file = new File(_path);
+		this(new File(_path));
+	}
+
+	public YFile(File _file) {
+		file = _file;
+		path = file.getAbsolutePath();
+	}
+
+	public YFile(String _directory, String _fileName) {
+		this(new File(_directory, _fileName));
 	}
 
 	public void create() {
@@ -30,7 +37,6 @@ public class YFile {
 	public void writeAll(String input) {
 		try {
 			FileWriter myWriter = new FileWriter(file);
-
 			myWriter.write(input);
 			myWriter.close();
 		} catch (IOException ex) {
@@ -42,10 +48,38 @@ public class YFile {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < input.size(); i++) {
 			stringBuilder.append(input.get(i));
-			if (i < input.size() - 1)
-				stringBuilder.append(System.lineSeparator());
+			stringBuilder.append(System.lineSeparator());
 		}
 		writeAll(stringBuilder.toString());
+	}
+
+	public void writeAll(String[] input) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = 0; i < input.length; i++) {
+			stringBuilder.append(input[i]);
+			stringBuilder.append(System.lineSeparator());
+		}
+		writeAll(stringBuilder.toString());
+	}
+
+	public void write(List<String> input) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = 0; i < input.size(); i++) {
+			stringBuilder.append(input.get(i));
+			stringBuilder.append(System.lineSeparator());
+		}
+
+		write(stringBuilder.toString());
+	}
+
+	public void write(String[] input) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = 0; i < input.length; i++) {
+			stringBuilder.append(input[i]);
+				stringBuilder.append(System.lineSeparator());
+		}
+
+		write(stringBuilder.toString());
 	}
 
 	public void write(String input) {

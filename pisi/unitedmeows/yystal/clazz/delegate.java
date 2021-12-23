@@ -1,2 +1,4 @@
-package pisi.unitedmeows.yystal.clazz;public class delegate {
+package pisi.unitedmeows.yystal.clazz;
+
+public interface delegate {
 }

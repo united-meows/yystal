@@ -1,2 +1,9 @@
-package pisi.unitedmeows.yystal;public class YSettings {
+package pisi.unitedmeows.yystal;
+
+public enum YSettings {
+	TASKWORKER_FETCH_DELAY,
+	TASKPOOL_CONTROL_CHECK_DELAY,
+	TASK_AWAIT_DELAY,
+	TCP_CLIENT_WRITE_DELAY,
+	TCP_CLIENT_QUEUE_CHECK_DELAY;
 }

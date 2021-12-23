@@ -5,7 +5,7 @@ public class Stopwatch {
 	private long ms;
 
 	public Stopwatch() {
-		ms = 0;
+		reset();
 	}
 
 	public boolean isReached(long milliseconds) {

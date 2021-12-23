@@ -1,12 +1,11 @@
-package pisi.unitedmeows.yystal.parallel;
+package pisi.unitedmeows.yystal.parallel.pools;
 
-import pisi.unitedmeows.yystal.YSettings;
-import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.*;
+import pisi.unitedmeows.yystal.parallel.*;
 import pisi.unitedmeows.yystal.utils.kThread;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BasicTaskPool implements ITaskPool
 {
@@ -20,12 +19,16 @@ public class BasicTaskPool implements ITaskPool
 	private int minWorkers, maxWorkers;
 
 	/* tasks in the queue */
-	private ArrayBlockingQueue<Task> taskQueue;
+	private ConcurrentLinkedQueue<Task> taskQueue;
+
+	private HashMap<Task, Long> waitingTasks = new HashMap<>();
 
 	public BasicTaskPool(int minWorkers, int maxWorkers) {
 		this.minWorkers = minWorkers;
 		this.maxWorkers = maxWorkers;
-		taskQueue = new ArrayBlockingQueue<Task>();
+		taskWorkers = new ArrayList<>();
+		waitingTasks  = new HashMap<>();
+		taskQueue = new ConcurrentLinkedQueue<Task>();
 	}
 
 	/* gets called when the client starts using this pool */
@@ -61,7 +64,7 @@ public class BasicTaskPool implements ITaskPool
 
 	/* controller thread */
 	public void control() {
-		while (true) {
+		while (YYStal.mainThread().isAlive()) {
 
 			boolean allBusy = true;
 			for (TaskWorker taskWorker : taskWorkers) {
@@ -77,6 +80,24 @@ public class BasicTaskPool implements ITaskPool
 				taskWorkers.add(taskWorker);
 				taskWorker.start();
 			}
+
+			if (!waitingTasks.isEmpty()) {
+				try {
+					Iterator<Map.Entry<Task, Long>> waitingTasksIterator = waitingTasks.entrySet().iterator();
+					long time = System.currentTimeMillis();
+					while (waitingTasksIterator.hasNext()) {
+						Map.Entry<Task, Long> taskTuple = waitingTasksIterator.next();
+						if (taskTuple.getValue() < time) {
+							taskQueue.add(taskTuple.getKey());
+							waitingTasksIterator.remove();
+						}
+					}
+				} catch (ConcurrentModificationException e) {
+					e.printStackTrace();
+				}
+			}
+
+
 
 			/* if a worker is free for some time removes the worker */
 			if (!allBusy && workerCount() > minWorkers) {
@@ -99,8 +120,72 @@ public class BasicTaskPool implements ITaskPool
 
 	/* runs the function async */
 	@Override
-	public void run(IFunction function) {
-		taskQueue.add(new Task(function));
+	public Task run(IFunction<?> function, Future<?> future) {
+		final Task task = new Task(function, future);
+		taskQueue.add(task);
+		return task;
+	}
+
+	@Override
+	public Task run_w(IFunction<?> function, Future<?> future, long after) {
+		if (after <= 0) {
+			return run(function, future);
+		}
+		final Task task = new Task(function, future);
+		waitingTasks.put(task, System.currentTimeMillis() + after);
+		return task;
+	}
+
+	@Override
+	public TaskWorker getWorker() {
+		Thread thread = Thread.currentThread();
+		Iterator<TaskWorker> taskWorkerIterator = taskWorkers.iterator();
+		while (taskWorkerIterator.hasNext()) {
+			final TaskWorker taskWorker = taskWorkerIterator.next();
+			if (taskWorker == thread)
+				return taskWorker;
+		}
+		return null;
+	}
+
+	@Override
+	public TaskWorker getWorker(Task task) {
+		Iterator<TaskWorker> taskWorkerIterator = taskWorkers.iterator();
+		while (taskWorkerIterator.hasNext()) {
+			final TaskWorker taskWorker = taskWorkerIterator.next();
+			if (taskWorker.currentTask() == task)
+				return taskWorker;
+		}
+		return null;
+	}
+
+
+	@Override
+	public void stopWorker(TaskWorker worker, boolean abort) {
+		Iterator<TaskWorker> taskWorkerIterator = taskWorkers.iterator();
+		while (taskWorkerIterator.hasNext()) {
+			final TaskWorker taskWorker = taskWorkerIterator.next();
+			if (taskWorker == worker) {
+				taskWorkerIterator.remove();
+				break;
+			}
+		}
+		if (abort)
+			worker.abortWorker();
+		else
+			worker.stopWorker();
+	}
+
+	@Override
+	public void stopWorker(TaskWorker worker) {
+		stopWorker(worker, false);
+	}
+
+	@Override
+	public void newWorker() {
+		final TaskWorker taskWorker = new TaskWorker();
+		taskWorkers.add(taskWorker);
+		taskWorker.start();
 	}
 
 	@Override
@@ -110,6 +195,6 @@ public class BasicTaskPool implements ITaskPool
 
 	@Override
 	public Task nextTask() {
-		return null;
+		return taskQueue.poll();
 	}
 }

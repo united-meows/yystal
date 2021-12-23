@@ -1,32 +1,30 @@
 package test.yystal;
 
-import org.jsfml.graphics.Color;
 import static pisi.unitedmeows.yystal.YYStal.*;
-
-import pisi.unitedmeows.yystal.exception.YEx;
-import pisi.unitedmeows.yystal.parallel.Future;
-import pisi.unitedmeows.yystal.parallel.Promise;
-import pisi.unitedmeows.yystal.ui.YWindow;
-import pisi.unitedmeows.yystal.utils.Mutex;
-
-import java.util.Random;
-
 import static pisi.unitedmeows.yystal.parallel.Async.*;
+
+import org.lwjglx.Sys;
+import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.clazz.valuelock;
+import pisi.unitedmeows.yystal.hook.YString;
+import pisi.unitedmeows.yystal.parallel.Future;
+import pisi.unitedmeows.yystal.parallel.utils.YTimer;
+import pisi.unitedmeows.yystal.ui.YWindow;
+import pisi.unitedmeows.yystal.utils.kThread;
+import pisi.unitedmeows.yystal.web.YWebClient;
+
+import java.io.File;
+import java.util.HashMap;
 
 public class Start {
 
     public static void main(String[] args) {
-        mutex.lock();
-        System.out.println("test");
-        try {
-            Thread.sleep(1000); 
-        } catch (InterruptedException e) {
-        
-        }
-        mutex.unlock();
-    
-        
-        YWindow yWindow = new YWindow("Hello world!", 300, 300);
-        yWindow.open();
+
+        YWebClient webClient = new YWebClient();
+        webClient.downloadFile("https://placekitten.com/g/200/300", new File("cat.png"));
+        System.out.println("Finished downloading");
+
+        kThread.sleep(10000);
     }
+
 }

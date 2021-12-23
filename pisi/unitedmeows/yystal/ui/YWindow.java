@@ -2,7 +2,9 @@ package pisi.unitedmeows.yystal.ui;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+import pisi.unitedmeows.yystal.ui.font.TTFFontRenderer;
 
+import java.awt.*;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -21,6 +23,7 @@ public class YWindow {
 
 	private long window;
 	private Thread windowThread = null;
+	private TTFFontRenderer yFont;
 
 	public YWindow(String _title, int _width, int _height) {
 		title = _title;
@@ -46,11 +49,12 @@ public class YWindow {
 		return this;
 	}
 
-	public void setResizable(boolean state) {
+	public YWindow setResizable(boolean state) {
 		resizable = state;
 		if (windowThread != null) {
 			glfwWindowHint(GLFW_RESIZABLE, state ? GLFW_TRUE : GLFW_FALSE);
 		}
+		return this;
 	}
 
 	public YWindow size(int _width, int _height) {
@@ -89,7 +93,8 @@ public class YWindow {
 			/* throw an exception */
 			return;
 		}
-
+		glfwMakeContextCurrent(window);
+		GL.createCapabilities();
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
 			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
 				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
@@ -121,6 +126,7 @@ public class YWindow {
 
 		glfwShowWindow(window);
 
+		yFont = new TTFFontRenderer(new Font("Sans Serif", Font.PLAIN, 16));
 		loop();
 	}
 

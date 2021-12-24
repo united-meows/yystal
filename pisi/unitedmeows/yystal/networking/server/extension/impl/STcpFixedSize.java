@@ -13,8 +13,10 @@ public class STcpFixedSize extends STcpExtension {
 	@Override
 	public void onPreDataReceive(YSocketClient client, DataInputStream inputStream, ref<Boolean> cancelDefaultReader, out<byte[]> readData) {
 		try {
-			System.out.println("manipulation the data");
 			int dataSize = inputStream.readInt();
+			if (dataSize > 65535) {
+				dataSize = 65535;
+			}
 			byte[] data = new byte[dataSize];
 			inputStream.read(data);
 			cancelDefaultReader.set(true);
@@ -28,7 +30,7 @@ public class STcpFixedSize extends STcpExtension {
 		try {
 			byte[] rawData = data.get();
 			MemoryWriter memoryWriter = new MemoryWriter();
-			memoryWriter.write((int) rawData.length);
+			memoryWriter.writeInt(rawData.length);
 			memoryWriter.write(rawData);
 			data.set(memoryWriter.getBytes());
 			send.set(true);

@@ -106,11 +106,12 @@ public class YSocketClient {
 					int size = inputStream.read(BUFFER);
 					data = Arrays.copyOf(BUFFER, size);
 				}
+
+				connectedServer().dataReceiveEvent.fire(this, data);
 				ref<byte[]> refData = YYStal.reference(data);
 				connectedServer().extensions().forEach(extension -> {
 					extension.onPostDataReceive(this, refData);
 				});
-				connectedServer().dataReceiveEvent.fire(this, refData.get());
 
 			} catch (IOException ex) {
 				YExManager.pop(new YexIO(String.format("Couldn't receive data from the client %s", ex.getMessage())));

@@ -19,7 +19,6 @@ public class valuelock<X> extends HookClass<X> {
 	}
 
 	public X get() {
-
 		return hooked;
 	}
 }

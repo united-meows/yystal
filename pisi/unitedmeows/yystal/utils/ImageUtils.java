@@ -13,16 +13,14 @@ public class ImageUtils {
 		} catch (IOException e) {
 			return null;
 		}
-		byte[] bytes = baos.toByteArray();
-		return bytes;
+		return baos.toByteArray();
 
 	}
 
 	public static BufferedImage toBufferedImage(byte[] bytes) {
 		try {
 			InputStream is = new ByteArrayInputStream(bytes);
-			BufferedImage bi = ImageIO.read(is);
-			return bi;
+			return ImageIO.read(is);
 		} catch (IOException ex) {
 			return null;
 		}

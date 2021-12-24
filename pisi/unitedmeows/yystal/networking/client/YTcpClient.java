@@ -3,6 +3,7 @@ package pisi.unitedmeows.yystal.networking.client;
 import pisi.unitedmeows.yystal.YSettings;
 import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.clazz.event;
+import pisi.unitedmeows.yystal.clazz.mutex;
 import pisi.unitedmeows.yystal.clazz.out;
 import pisi.unitedmeows.yystal.clazz.ref;
 import pisi.unitedmeows.yystal.exception.YExManager;
@@ -162,10 +163,27 @@ public class YTcpClient {
 			extensions().forEach(extension -> {
 				extension.onSocketClose(canceled);
 			});
+			extensions.clear();
 			if (!canceled.get()) {
 				_close();
 			}
 		}
+	}
+
+	public byte[] readNext() {
+		ref<byte[]> receivedData = YYStal.reference(null);
+		final mutex waitLock = new mutex();
+
+		int delegateId = dataReceivedEvent.bind(new CDataReceivedEvent() {
+			@Override
+			public void onDataReceived(byte[] data) {
+				receivedData.set(data);
+				waitLock.unlock();
+			}
+		});
+		waitLock.lock();
+		dataReceivedEvent.free(delegateId);
+		return receivedData.get();
 	}
 
 	private boolean _close() {

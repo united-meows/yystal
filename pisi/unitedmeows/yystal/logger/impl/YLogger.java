@@ -28,6 +28,11 @@ public class YLogger implements ILogger {
 		name = "[" + clazz.getSimpleName().toUpperCase(Locale.ROOT) + "]";
 	}
 
+	public YLogger(final Class<?> _clazz, final String _name) {
+		clazz = _clazz;
+		name = "[" + _name + "]";
+	}
+
 
 	private void post(String text) {
 		final StringBuilder stringBuilder = new StringBuilder();

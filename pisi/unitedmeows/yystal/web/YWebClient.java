@@ -72,13 +72,17 @@ public class YWebClient {
 		}
 	}
 
-	public void downloadFile(String url, File file) {
+	public boolean downloadFile(String url, File file) {
 		try {
-			downloadFile(new URL(url), file);
-		} catch (MalformedURLException e) {}
+			return downloadFile(new URL(url), file);
+		} catch (MalformedURLException e) {
+			return false;
+		}
 	}
 
-	public void downloadFile(URL url, File file) {
+
+
+	public boolean downloadFile(URL url, File file) {
 		try {
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setReadTimeout(timeout);
@@ -92,8 +96,7 @@ public class YWebClient {
 
 			out<URL> newUrl = YYStal.out();
 			if (redirectCheck(connection, newUrl)) {
-				downloadFile(newUrl.get(), file);
-				return;
+				return downloadFile(newUrl.get(), file);
 			}
 
 			int count;
@@ -107,11 +110,13 @@ public class YWebClient {
 				responseHeaders = connection.getHeaderFields();
 			}
 
-
+			return true;
 		} catch (Exception e) {
-
+			return false;
 		}
 	}
+
+
 
 
 	public String downloadString(URL url) {
@@ -263,6 +268,10 @@ public class YWebClient {
 			}
 		} catch (Exception ex) {}
 		return false;
+	}
+
+	public Map<String, List<String>> responseHeaders() {
+		return responseHeaders;
 	}
 
 	public void cookie(String cookies) {

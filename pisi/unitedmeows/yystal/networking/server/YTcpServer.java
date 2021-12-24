@@ -9,6 +9,7 @@ import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.events.SConnectionReceivedEvent;
 import pisi.unitedmeows.yystal.networking.events.SDataReceivedEvent;
 import pisi.unitedmeows.yystal.networking.server.extension.STcpExtension;
+import pisi.unitedmeows.yystal.networking.server.extension.impl.STcpFixedSize;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -43,13 +44,20 @@ public class YTcpServer {
 		extensions = new ArrayList<>();
 	}
 
+	public YTcpServer(ServerSocket _serverSocket, IPAddress _listenIp, int _listenPort) {
+		this(_listenIp, _listenPort);
+		serverSocket = _serverSocket;
+	}
+
 
 	public boolean listen() {
-		try {
-			serverSocket = new ServerSocket(port,50, listening.inet());
-		} catch (IOException e) {
-			YExManager.pop(new YexIO(String.format("Couldn't start the server %s", e.getMessage())));
-			return false;
+		if (serverSocket == null) {
+			try {
+				serverSocket = new ServerSocket(port, 50, listening.inet());
+			} catch (IOException e) {
+				YExManager.pop(new YexIO(String.format("Couldn't start the server %s", e.getMessage())));
+				return false;
+			}
 		}
 		connectedClients = new ArrayList<>();
 		connectionThread = new Thread(this::startListening);
@@ -67,8 +75,9 @@ public class YTcpServer {
 				});
 
 				if (accepted.get()) {
-					connectedClients.add(new YSocketClient(socket, this));
-					connectionReceivedEvent.fire(socket);
+					YSocketClient ySocketClient = new YSocketClient(socket, this);
+					connectedClients.add(ySocketClient);
+					connectionReceivedEvent.fire(ySocketClient);
 				} else {
 					socket.close();
 				}
@@ -76,6 +85,27 @@ public class YTcpServer {
 				YExManager.pop(new YexIO(String.format("Server couldn't accept the client %s", ex.getMessage())));
 			}
 		}
+	}
+
+	public void close() {
+		try {
+			kickAll();
+			connectedClients.clear();
+			serverSocket.close();
+		} catch(IOException e) {
+
+		}
+	}
+
+	public void kickAll() {
+		for (YSocketClient client : connectedClients()) {
+			client._preClose();
+		}
+	}
+
+	public YTcpServer makeFixed() {
+		extensions().add(new STcpFixedSize());
+		return this;
 	}
 
 	public List<STcpExtension> extensions() {

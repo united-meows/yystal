@@ -9,11 +9,13 @@ import pisi.unitedmeows.yystal.exception.YExManager;
 import pisi.unitedmeows.yystal.exception.impl.YexIO;
 import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.client.extension.CTcpExtension;
+import pisi.unitedmeows.yystal.networking.client.extension.impl.CTcpFixedSize;
 import pisi.unitedmeows.yystal.networking.events.CDataReceivedEvent;
 import pisi.unitedmeows.yystal.utils.kThread;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
@@ -49,6 +51,7 @@ public class YTcpClient {
 
 	public YTcpClient() {
 		_sendQueue = new ConcurrentLinkedQueue<>();
+		extensions = new ArrayList<>();
 		dataReceivedEvent = new event<>();
 	}
 
@@ -117,14 +120,14 @@ public class YTcpClient {
 	}
 
 	protected void write() {
-		while (getConnectedAddress()) {
+		while (isConnected()) {
 			if (_sendQueue.isEmpty()) {
 				kThread.sleep(YYStal.setting(YSettings.TCP_CLIENT_QUEUE_CHECK_DELAY));
 			} else {
 				byte[] data = _sendQueue.poll();
 				try {
 					ref<byte[]> modifiedData = YYStal.reference(data);
-					ref<Boolean> shouldSend = YYStal.reference(false);
+					ref<Boolean> shouldSend = YYStal.reference(true);
 
 					extensions().forEach(extension -> {
 						extension.onDataSend(modifiedData, shouldSend);
@@ -142,6 +145,12 @@ public class YTcpClient {
 			}
 		}
 	}
+
+	public YTcpClient makeFixed() {
+		extensions().add(new CTcpFixedSize());
+		return this;
+	}
+
 
 	public void send(byte[] data) {
 		_sendQueue.add(data);
@@ -172,7 +181,7 @@ public class YTcpClient {
 
 
 	protected void read() {
-		while (getConnectedAddress()) {
+		while (isConnected()) {
 			try {
 				ref<Boolean> cancelDefaultReader = YYStal.reference(false);
 				out<byte[]> readData = YYStal.out();
@@ -212,7 +221,7 @@ public class YTcpClient {
 		extensions().add(extension);
 	}
 
-	public boolean getConnectedAddress() {
+	public boolean isConnected() {
 		return !socket.isClosed() && socket.isConnected();
 	}
 

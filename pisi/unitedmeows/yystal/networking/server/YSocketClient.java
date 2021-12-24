@@ -55,9 +55,19 @@ public class YSocketClient {
 		}
 	}
 
+	public void _preClose() {
+		try {
+			socket.close();
+			outputStream.close();
+			inputStream.close();
+			connectedServer = null;
+		} catch (Exception ex) {
+
+		}
+	}
+
 	public void close() {
 		try {
-
 			socket.close();
 			outputStream.close();
 			inputStream.close();
@@ -82,7 +92,7 @@ public class YSocketClient {
 	}
 
 	protected void receive() {
-		while (socket.isConnected()) {
+		while (socket.isConnected() && !socket.isClosed()) {
 			try {
 				ref<Boolean> cancelDefaultReader = YYStal.reference(false);
 				out<byte[]> receiveData = YYStal.out();

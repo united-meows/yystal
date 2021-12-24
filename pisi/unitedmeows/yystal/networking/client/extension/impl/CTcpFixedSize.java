@@ -17,8 +17,10 @@ public class CTcpFixedSize extends CTcpExtension {
 		try {
 			memoryWriter.writeInt(data.get().length);
 			memoryWriter.write(data.get());
-		} catch (Exception ex) {}
+		} catch (Exception ex) {
 
+		}
+		System.out.println("maniplating the data");
 		data.set(memoryWriter.getBytes());
 		send.set(true);
 	}
@@ -32,7 +34,6 @@ public class CTcpFixedSize extends CTcpExtension {
 			readData.set(received);
 			cancelDefaultReader.set(true);
 		} catch (Exception ex) {
-
 		}
 	}
 }

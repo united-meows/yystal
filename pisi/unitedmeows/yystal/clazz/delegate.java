@@ -1,4 +1,3 @@
 package pisi.unitedmeows.yystal.clazz;
 
-public interface delegate {
-}
+public interface delegate { }

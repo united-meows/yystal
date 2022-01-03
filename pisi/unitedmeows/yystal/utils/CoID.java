@@ -30,36 +30,36 @@ public class CoID implements Comparable<CoID> {
 		//SS$UDUD-LLD-SULUUULL-DD
 		StringBuilder builder = new StringBuilder();
 		// SS
-		builder.append(nextSpecial());
-		builder.append(nextSpecial());
+		builder.append(nextSpecial()); // 11
+		builder.append(nextSpecial()); // 11
 		builder.append('$');
 
 		//UDUD
-		builder.append(nextUpper());
-		builder.append(nextDigit());
-		builder.append(nextUpper());
-		builder.append(nextDigit());
+		builder.append(nextUpper()); // 25
+		builder.append(nextDigit()); // 10
+		builder.append(nextUpper()); // 25
+		builder.append(nextDigit()); // 10
 		builder.append('-');
 
 		//LLD
-		builder.append(nextLower());
-		builder.append(nextLower());
-		builder.append(nextDigit());
+		builder.append(nextLower()); // 25
+		builder.append(nextLower()); // 25
+		builder.append(nextDigit()); // 10
 		builder.append('-');
 
 		//SULUUULL
-		builder.append(nextSpecial()); // S
-		builder.append(nextUpper()); // U
-		builder.append(nextLower()); // L
-		builder.append(nextUpper()); // U
-		builder.append(nextUpper()); // U
-		builder.append(nextUpper()); // U
-		builder.append(nextLower()); // L
-		builder.append(nextLower()); // L
+		builder.append(nextSpecial()); // S 11
+		builder.append(nextUpper()); // U 25
+		builder.append(nextLower()); // L 11
+		builder.append(nextUpper()); // U 25
+		builder.append(nextUpper()); // U 25
+		builder.append(nextUpper()); // U 25
+		builder.append(nextLower()); // L 25
+		builder.append(nextLower()); // L 25
 		builder.append('-');
 		//DD
-		builder.append(nextDigit());
-		builder.append(nextDigit());
+		builder.append(nextDigit()); // 10
+		builder.append(nextDigit());	
 		return new CoID(builder.toString());
 
 	}

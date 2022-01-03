@@ -49,6 +49,11 @@ public class YTcpServer {
 		serverSocket = _serverSocket;
 	}
 
+	public void registerExtension(STcpExtension extension) {
+		extensions().add(extension);
+		extension.setup(this);
+	}
+
 
 	public boolean listen() {
 		if (serverSocket == null) {

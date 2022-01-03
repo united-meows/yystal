@@ -10,7 +10,7 @@ public class valuelock<X> extends HookClass<X> {
 
 	public void __setup() {
 		locked = true;
-		kThread.sleep_till(() -> { return locked; });
+		kThread.sleep_till(() ->  locked);
 	}
 
 	public void free(X _value) {

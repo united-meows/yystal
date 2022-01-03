@@ -1,10 +1,13 @@
 package pisi.unitedmeows.yystal.yap;
 
+import pisi.unitedmeows.yystal.clazz.event;
 import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.events.SDataReceivedEvent;
 import pisi.unitedmeows.yystal.networking.server.YSocketClient;
 import pisi.unitedmeows.yystal.networking.server.YTcpServer;
 import pisi.unitedmeows.yystal.utils.CoID;
+import pisi.unitedmeows.yystal.utils.MemoryReader;
+import pisi.unitedmeows.yystal.yap.events.YSSignalReceived;
 import stelix.xfile.SxfDataBlock;
 import stelix.xfile.SxfFile;
 import stelix.xfile.writer.SxfWriter;
@@ -22,6 +25,7 @@ public class YAppServer {
 	private double appVersion;
 	private CoID appId;
 	private final String introductionMessage;
+	public event<YSSignalReceived> signalReceivedEvent = new event<>();
 
 	public YAppServer(String _appName, double _appVersion, CoID _appId, final IPAddress address, final int port) {
 		appName = _appName;
@@ -43,6 +47,9 @@ public class YAppServer {
 		return tcpServer.port();
 	}
 
+	public YapSignalBuilder newSignal() {
+		return YapSignalBuilder.builder();
+	}
 
 	public void listen() {
 		tcpServer.makeFixed();
@@ -53,10 +60,13 @@ public class YAppServer {
 			public void onClientDataReceived(YSocketClient client, byte[] data) {
 				if (Arrays.equals(data, YapConstants.ASK_INTRODUCTION.data())) {
 					client.write(introductionMessage.getBytes(StandardCharsets.UTF_8));
+				} else {
+					signalReceivedEvent.fire(client, new YapSignal(new MemoryReader(data)));
 				}
 			}
 		});
 	}
+
 
 
 	protected static int findAvailablePort() {
@@ -96,5 +106,8 @@ public class YAppServer {
 			return false;
 		}
 		return true;
+	}
+	public YTcpServer tcpServer() {
+		return tcpServer;
 	}
 }

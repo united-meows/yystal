@@ -1,9 +1,12 @@
 package pisi.unitedmeows.yystal.web;
 
 import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.clazz.event;
 import pisi.unitedmeows.yystal.clazz.out;
 import pisi.unitedmeows.yystal.hook.YString;
 import pisi.unitedmeows.yystal.utils.YRandom;
+import pisi.unitedmeows.yystal.web.events.WCDownloadFinished;
+import pisi.unitedmeows.yystal.web.events.WCDownloadProgress;
 
 import java.io.*;
 import java.net.*;
@@ -18,8 +21,13 @@ public class YWebClient {
 
 	private int timeout = 10000;
 	private Map<String, String> headers = createDefaultHeaders();
-	private static final String USER_AGENT = randomUserAgent();
+	private static final String DEFAULT_USER_AGENT = randomUserAgent();
 	private Map<String, List<String>> responseHeaders = new HashMap<>();
+
+	/* Download Progress Event only works when server has set Content-Length header
+	* otherwise the only correct value will be currentBytes variable */
+	public event<WCDownloadProgress> downloadProgressEvent = new event<>();
+	public event<WCDownloadFinished> downloadFinishedEvent = new event<>();
 
 
 	public String downloadString(String url) {
@@ -55,15 +63,21 @@ public class YWebClient {
 				return downloadBytes(newUrl.get());
 			}
 
+			final int contentLength = connection.getContentLength();
 			int count;
-
+			downloadProgressEvent.fire(0, 0, contentLength);
 			byte data[] = new byte[4096];
 			try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()){
 				while ((count = connection.getInputStream().read(data)) != -1) {
 					outputStream.write(data, 0, count);
+					double percent = (outputStream.size() * 100D) / contentLength;
+					downloadProgressEvent.fire(percent, outputStream.size(), contentLength);
 				}
 				responseHeaders = connection.getHeaderFields();
-				return outputStream.toByteArray();
+
+				byte[] result = outputStream.toByteArray();
+				downloadFinishedEvent.fire();
+				return result;
 			}
 
 
@@ -102,11 +116,18 @@ public class YWebClient {
 			int count;
 
 			byte data[] = new byte[4096];
+			final int contentLength = connection.getContentLength();
+			int totalDownloaded = 0;
+			downloadProgressEvent.fire(0, 0, contentLength);
 			try (FileOutputStream outputStream = new FileOutputStream(file)){
 				while ((count = connection.getInputStream().read(data)) != -1) {
 					outputStream.write(data, 0, count);
+					totalDownloaded += count;
+					downloadProgressEvent.fire((totalDownloaded * 100) / contentLength, totalDownloaded, contentLength);
+					outputStream.flush();
 				}
 				outputStream.flush();
+				downloadFinishedEvent.fire();
 				responseHeaders = connection.getHeaderFields();
 			}
 
@@ -284,9 +305,14 @@ public class YWebClient {
 
 	private static Map<String, String> createDefaultHeaders() {
 		HashMap<String, String> headers = new HashMap<>();
-		headers.put("User-Agent", USER_AGENT);
+		headers.put("User-Agent", DEFAULT_USER_AGENT);
 
 		return headers;
+	}
+
+	public YWebClient setUserAgent(String userAgent) {
+		headers.put("User-Agent", userAgent);
+		return this;
 	}
 
 	private static String randomUserAgent() {

@@ -18,7 +18,7 @@ public class YRandom {
 		return (byte) nextInRange(-127, 127);
 	}
 
-	public byte nextByteInRange(int min, int max) {
+	public byte nextByte(int min, int max) {
 		return (byte) nextInRange(min, max);
 	}
 

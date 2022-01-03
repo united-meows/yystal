@@ -1,6 +1,5 @@
 package pisi.unitedmeows.yystal;
 
-import com.sun.jndi.cosnaming.ExceptionMapper;
 import pisi.unitedmeows.yystal.clazz.function;
 import pisi.unitedmeows.yystal.clazz.out;
 import pisi.unitedmeows.yystal.clazz.ref;
@@ -10,6 +9,9 @@ import pisi.unitedmeows.yystal.exception.YExManager;
 import pisi.unitedmeows.yystal.hook.YString;
 import pisi.unitedmeows.yystal.parallel.ITaskPool;
 import pisi.unitedmeows.yystal.parallel.pools.BasicTaskPool;
+import pisi.unitedmeows.yystal.sql.YSQLCommand;
+import pisi.unitedmeows.yystal.ui.YWindow;
+import pisi.unitedmeows.yystal.utils.Pair;
 import pisi.unitedmeows.yystal.utils.Stopwatch;
 
 import java.util.HashMap;
@@ -21,12 +23,14 @@ public class YYStal {
 	private static final HashMap<YSettings, Object> settings;
 	private static final Thread mainThread;
 	private static final HashMap<String, valuelock<?>> valueLocks;
+	private static final HashMap<Thread, YWindow> windowMap;
 
 	static {
 		mainThread = Thread.currentThread();
 		valueLocks = new HashMap<>();
 		stopWatchMap = new HashMap<>();
 		settings = new HashMap<>();
+		windowMap = new HashMap<>();
 		setCurrentPool(new BasicTaskPool(5, 12));
 		settings.put(YSettings.TASKWORKER_FETCH_DELAY, 1L);
 		settings.put(YSettings.TASKPOOL_CONTROL_CHECK_DELAY, 3L);
@@ -63,8 +67,20 @@ public class YYStal {
 		return stopWatchMap.computeIfAbsent(Thread.currentThread(), x -> new Stopwatch()).elapsed();
 	}
 
+	public static YSQLCommand sqlCommand(String command, Object... params) {
+		YSQLCommand ysqlCommand = new YSQLCommand(command);
+		for (Object param : params) {
+			ysqlCommand.put(param);
+		}
+		return ysqlCommand;
+	}
+
 	public static <X> ref<X> reference(X initValue) {
 		return new ref<X>(initValue);
+	}
+
+	public static <F, S> Pair<F, S> pair(F first, S second) {
+		return new Pair<>(first, second);
 	}
 
 	public static <X> valuelock<X> value_lock(final String name) {
@@ -82,6 +98,14 @@ public class YYStal {
 		for (int i = 0; i < count; i++) {
 			runnable.run();
 		}
+	}
+
+	public static YWindow currentWindow() {
+		return windowMap.getOrDefault(Thread.currentThread(), null);
+	}
+
+	public static void registerWindow(YWindow window) {
+		windowMap.put(Thread.currentThread(), window);
 	}
 
 	public static <X> out<X> out() {

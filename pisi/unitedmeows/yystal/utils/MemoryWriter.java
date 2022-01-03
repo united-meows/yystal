@@ -7,7 +7,6 @@ public class MemoryWriter extends DataOutputStream {
 
 	private ByteArrayOutputStream outputStream;
 
-
 	public MemoryWriter() {
 		super(null);
 		outputStream = new ByteArrayOutputStream();

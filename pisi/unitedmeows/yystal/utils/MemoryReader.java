@@ -14,8 +14,6 @@ public class MemoryReader extends DataInputStream {
 		in = inputStream;
 	}
 
-
-
 	public String readString() {
 		try {
 			return super.readUTF();
@@ -23,6 +21,17 @@ public class MemoryReader extends DataInputStream {
 			return null;
 		}
 	}
+
+	@Override
+	public int read()  {
+		try {
+			return super.read();
+		} catch (Exception ex){
+			return -1;
+		}
+	}
+
+
 
 	public BufferedImage readImage() {
 		try {

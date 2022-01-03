@@ -5,9 +5,6 @@ import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.clazz.prop;
 import pisi.unitedmeows.yystal.utils.kThread;
 
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 public class Async {
 
 	/* runs the function on taskpool without returning a value */

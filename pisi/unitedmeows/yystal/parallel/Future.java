@@ -10,7 +10,6 @@ public class Future<X> {
 		set = true;
 	}
 
-
 	public boolean hasSet() {
 		return set;
 	}

@@ -9,11 +9,11 @@ public class Vector2<F, S> {
 		this.second = second;
 	}
 
-	public F first(final F val) { return this.first = val; }
+	public F setX(final F val) { return this.first = val; }
 
-	public F first() { return first; }
+	public F getX() { return first; }
 
-	public S second() { return second; }
+	public S getY() { return second; }
 
-	public S second(final S val) { return this.second = val; }
+	public S setY(final S val) { return this.second = val; }
 }

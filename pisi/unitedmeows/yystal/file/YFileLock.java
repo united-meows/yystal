@@ -11,7 +11,6 @@ import java.nio.channels.FileLock;
 
 public class YFileLock {
 
-
 	private File file;
 	private FileLock lock;
 

@@ -15,6 +15,10 @@ public class YString extends HookClass<StringBuilder> {
 	private boolean changed;
 	private String currentValue;
 
+	public YString(StringBuilder stringBuilder) {
+		hooked = stringBuilder;
+		changed = true;
+	}
 
 	public YString(String initial) {
 		hooked = new StringBuilder(initial);
@@ -31,6 +35,35 @@ public class YString extends HookClass<StringBuilder> {
 	public YString add(YString string) {
 		return add(string.toString());
 	}
+
+	public YString replaceFirst(char character, String toReplace) {
+		char lastChar = 'Y';
+		int lastIndex = 0;
+		String text = currentValue();
+		StringBuilder stringBuilder = new StringBuilder();
+		boolean replaced = false;
+		for (int i = 0; i < text.length(); i++) {
+			char currentChar = text.charAt(i);
+			if (currentChar == '\\' && text.length() > i + 1) {
+				if (text.charAt(i + 1) != character)
+					stringBuilder.append(text.charAt(i));
+			} else if (lastChar != '\\' && currentChar == character) {
+				stringBuilder.append(toReplace);
+				lastIndex = i;
+				replaced = true;
+				break;
+			} else {
+				stringBuilder.append(text.charAt(i));
+			}
+			lastChar = text.charAt(i);
+		}
+
+		if (replaced && lastIndex  + 1 < text.length()) {
+			stringBuilder.append(text.substring(lastIndex + 1));
+		}
+		return new YString(stringBuilder);
+	}
+
 
 	public String substring(int start) {
 		return hooked.substring(start);

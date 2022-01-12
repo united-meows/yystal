@@ -58,7 +58,7 @@ public class YTcpServer {
 	public boolean listen() {
 		if (serverSocket == null) {
 			try {
-				serverSocket = new ServerSocket(port, 50, listening.inet());
+				serverSocket = new ServerSocket(port, 50, listening.inetAddress.get());
 			} catch (IOException e) {
 				YExManager.pop(new YexIO(String.format("Couldn't start the server %s", e.getMessage())));
 				return false;

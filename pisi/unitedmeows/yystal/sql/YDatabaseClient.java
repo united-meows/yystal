@@ -101,6 +101,7 @@ public class YDatabaseClient {
 		}
 	}
 
+
 /*	public boolean insertMulti(String tableName, List<List<Object>> dataList, String... columns) {
 		String sql = "INSERT INTO " + tableName + "(" + String.join(",", columns) + " VALUES ";
 

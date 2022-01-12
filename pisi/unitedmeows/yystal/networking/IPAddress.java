@@ -1,6 +1,8 @@
 package pisi.unitedmeows.yystal.networking;
 
 
+import pisi.unitedmeows.yystal.clazz.prop;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -10,6 +12,24 @@ public class IPAddress {
 	public static final IPAddress ANY = new IPAddress("0.0.0.0");
 
 	private final String address;
+	public prop<InetAddress> inetAddress = new prop<InetAddress>(null) {
+		@Override
+		public InetAddress get() {
+			if (value == null) {
+				try {
+					value = InetAddress.getByName(getAddress());
+				} catch (UnknownHostException e) {
+
+				}
+			}
+			return value;
+		}
+
+		@Deprecated
+		@Override
+		public void set(InetAddress newValue) {}
+	};
+
 
 	protected IPAddress(String _address) {
 		address = _address;
@@ -19,7 +39,7 @@ public class IPAddress {
 		return new IPAddress(address);
 	}
 
-	public IPAddress parse(String address) {
+	public static IPAddress parse(String address) {
 		try {
 			return new IPAddress(InetAddress.getByName(address).getHostAddress());
 		} catch (UnknownHostException e) {
@@ -31,11 +51,4 @@ public class IPAddress {
 		return address;
 	}
 
-	public InetAddress inet() {
-		try {
-			return InetAddress.getByName(getAddress());
-		} catch (UnknownHostException e) {
-			return null;
-		}
-	}
 }

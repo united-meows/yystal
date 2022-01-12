@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 public class YSocketClient {
+
 	private static byte[] BUFFER = new byte[4096 * 2];
 	private final Socket socket;
 	private YTcpServer connectedServer;
@@ -40,6 +41,9 @@ public class YSocketClient {
 	}
 
 	public void write(byte[] data) {
+		if (isDisconnected()) {
+			return;
+		}
 		try {
 			ref<byte[]> sendData = YYStal.reference(data);
 			ref<Boolean> shouldSend = YYStal.reference(true);
@@ -91,6 +95,10 @@ public class YSocketClient {
 		return connectedServer;
 	}
 
+	public boolean isDisconnected() {
+		return socket == null || !socket.isConnected() || socket.isClosed();
+	}
+
 	protected void receive() {
 		while (socket.isConnected() && !socket.isClosed()) {
 			try {
@@ -104,7 +112,12 @@ public class YSocketClient {
 					data = receiveData.get();
 				} else {
 					int size = inputStream.read(BUFFER);
-					data = Arrays.copyOf(BUFFER, size);
+					if (size >= 0)
+						data = Arrays.copyOf(BUFFER, size);
+					else {
+						data = new byte[0];
+						close();
+					}
 				}
 
 				connectedServer().dataReceiveEvent.fire(this, data);

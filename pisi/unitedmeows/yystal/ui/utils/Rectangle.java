@@ -43,8 +43,7 @@ public class Rectangle {
 	// doesnt work at the moment :Dd
 	// gradient btw
 	public void draw(final int color, final int endColor) {
-		glEnable(GL_BLEND);
-		glDisable(GL_TEXTURE_2D);
+
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_LINE_SMOOTH);
 		glShadeModel(GL_SMOOTH);
@@ -58,8 +57,6 @@ public class Rectangle {
 		glVertex2d(vector.z, vector.y);
 		glEnd();
 		glPopMatrix();
-		glEnable(GL_TEXTURE_2D);
-		glDisable(GL_BLEND);
 		glDisable(GL_LINE_SMOOTH);
 		glShadeModel(GL_FLAT);
 	}

@@ -215,6 +215,10 @@ public class YTcpClient {
 					});
 				} else {
 					int size = inputStream.read(BUFFER);
+					if (size < 0) {
+						close();
+						return;
+					}
 					byte[] data = Arrays.copyOf(BUFFER, size);
 					ref<byte[]> modifiedData = YYStal.reference(data);
 					extensions.forEach(x -> {
@@ -240,7 +244,7 @@ public class YTcpClient {
 	}
 
 	public boolean isConnected() {
-		return !socket.isClosed() && socket.isConnected();
+		return socket != null && !socket.isClosed() && socket.isConnected();
 	}
 
 }

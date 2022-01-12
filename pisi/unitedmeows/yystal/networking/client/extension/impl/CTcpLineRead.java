@@ -13,8 +13,13 @@ import java.nio.charset.StandardCharsets;
 
 public class CTcpLineRead extends CTcpExtension {
 
-
+	protected YTcpClient client;
 	protected BufferedReader bufferedReader;
+
+	@Override
+	public void setup(YTcpClient tcpClient) {
+		client = tcpClient;
+	}
 
 	@Override
 	public void onPreDataReceive(DataInputStream inputStream, ref<Boolean> cancelDefaultReader, out<byte[]> readData) {
@@ -24,10 +29,16 @@ public class CTcpLineRead extends CTcpExtension {
 
 		try {
 			String readLine = bufferedReader.readLine();
+			if (readLine == null) {
+				client.close();
+				cancelDefaultReader.set(true);
+				readData.set(null);
+				return;
+			}
 			cancelDefaultReader.set(true);
 			readData.set(readLine.getBytes(StandardCharsets.UTF_8));
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		} catch (Exception ex) {
+
 		}
 	}
 }

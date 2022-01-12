@@ -10,7 +10,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class YLogger implements ILogger {
+public class  YLogger implements ILogger {
 
 	private Time time = Time.MILLISECONDS;
 	private final Class<?> clazz;

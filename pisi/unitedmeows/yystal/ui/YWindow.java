@@ -42,7 +42,7 @@ public class YWindow extends YContainer {
 
 
 	private String getPathFromAssets(final String file) {
-		if (file == null)
+		if (file == null) /* add check for linux */
 			return "/" + Object.class.getResource("/pisi/unitedmeows/yystal/ui/assets/").toString().substring(6);
 		return "/" + Object.class.getResource(String.format("/pisi/unitedmeows/yystal/ui/assets/%s", file)).toString().substring(6) /* to get rid of file:/ */;
 	}
@@ -169,7 +169,7 @@ public class YWindow extends YContainer {
 
 		int frameCount = 0;
 		int lastCalculation = 0;
-
+		glEnableClientState(GL11.GL_VERTEX_ARRAY);
 		glMatrixMode(GL_PROJECTION);
 		glOrtho(0, width(), height(), 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
@@ -182,7 +182,6 @@ public class YWindow extends YContainer {
 			// rendering here
 			final int mouseX = mouseCoords.getX().intValue();
 			final int mouseY = height() - mouseCoords.getY().intValue();
-			System.out.println(mouseX + " " + mouseY);
 			final double currentTime = glfwGetTime();
 			frameCount++;
 			if (currentTime - previousTime >= 1.0) {
@@ -201,8 +200,11 @@ public class YWindow extends YContainer {
 			batch.flushBatch();
 
 			if (!NullCheck.CHECK.isNull(rectangle)) {
-				rectangle.draw(-123534);
+				rectangle.draw(-8345634);
 			}
+
+
+
 
 			glfwPollEvents();
 			glfwSwapBuffers(window);

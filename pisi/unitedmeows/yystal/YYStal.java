@@ -13,6 +13,7 @@ import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.ui.YWindow;
 import pisi.unitedmeows.yystal.utils.Pair;
 import pisi.unitedmeows.yystal.utils.Stopwatch;
+import pisi.unitedmeows.yystal.utils.Types;
 
 import java.util.HashMap;
 
@@ -84,14 +85,20 @@ public class YYStal {
 	}
 
 	public static <X> valuelock<X> value_lock(final String name) {
-		boolean status = valueLocks.containsKey(name);
-		if (status)
+		if (valueLocks.containsKey(name))
 			return (valuelock<X>) valueLocks.get(name);
 
 		valuelock<X> lock = new valuelock<>();
 		valueLocks.put(name, lock);
 		lock.__setup();
+
+
+
 		return lock;
+	}
+
+	public static int sizeof(Class<?> clazz) {
+		return Types.sizeof(clazz);
 	}
 
 	public static void times(int count, Runnable runnable) {

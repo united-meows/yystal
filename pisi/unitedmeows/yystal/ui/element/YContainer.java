@@ -31,12 +31,9 @@ public abstract class YContainer extends YElement {
 		return size;
 	}
 
-
 	public Vertex2f location() {
 		return location;
 	}
-
-
 
 	public void setLocation(Vertex2f location) {
 		this.location = location;

@@ -48,6 +48,7 @@ public class YYStal {
 		currentPool.register();
 	}
 
+
 	public static void pop(YEx ex) {
 		YExManager.pop(ex);
 	}

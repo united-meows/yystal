@@ -44,7 +44,7 @@ public class Rectangle {
 	// gradient btw
 	public void draw(final int color, final int endColor) {
 
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_LINE_SMOOTH);
 		glShadeModel(GL_SMOOTH);
 		glPushMatrix();

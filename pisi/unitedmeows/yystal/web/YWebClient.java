@@ -137,9 +137,6 @@ public class YWebClient {
 		}
 	}
 
-
-
-
 	public String downloadString(URL url) {
 		try {
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -217,6 +214,7 @@ public class YWebClient {
 		}
 	}
 
+
 	public String postRequest(URL url, String value, String contentType) {
 		try {
 			URLConnection connection = url.openConnection();
@@ -273,6 +271,114 @@ public class YWebClient {
 		}
 	}
 
+	public String putRequest(String url, String value) {
+		return putRequest(url, value, "application/json");
+	}
+
+	public String putRequest(String url, String value, String contentType) {
+		try {
+			return putRequest(new URL(url),  value, contentType);
+		} catch (MalformedURLException ex) {
+			return null;
+		}
+	}
+
+	public String putRequest(URL url, String value) {
+		return putRequest(url, value, "application/json");
+	}
+
+	public String putRequest(URL url, String value, String contentType) {
+		try {
+			URLConnection connection = url.openConnection();
+
+			/* setup http connection */
+			HttpURLConnection http = (HttpURLConnection) connection;
+			http.setRequestMethod("PUT");
+			http.setDoOutput(true);
+
+			/* add headers */
+			headers.forEach(connection::addRequestProperty);
+
+
+
+			byte[] out = value.getBytes(StandardCharsets.UTF_8);
+			int length = out.length;
+			http.setFixedLengthStreamingMode(length);
+			http.setRequestProperty("Content-Type", contentType);
+			http.setRequestProperty("charset", "utf-8");
+			http.setRequestProperty("Content-Length", Integer.toString( length ));
+			http.setInstanceFollowRedirects( false );
+			http.setUseCaches( false );
+			http.connect();
+
+
+
+			try(OutputStream os = http.getOutputStream()) {
+				os.write(out);
+			}
+			/* check for redirects */
+			out<URL> newUrl = YYStal.out();
+			if (redirectCheck(http, newUrl)) {
+				return postRequest(newUrl.get(), value, contentType);
+			}
+
+			responseHeaders = connection.getHeaderFields();
+			StringBuilder stringBuilder = new StringBuilder();
+			if (http.getResponseCode() == HttpURLConnection.HTTP_OK) {
+				try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(http.getInputStream()))) {
+					String line;
+					while ((line = bufferedReader.readLine()) != null) {
+						stringBuilder.append(line);
+					}
+				}
+			} else if (http.getResponseCode() == HttpURLConnection.HTTP_NO_CONTENT) {
+				return "";
+			}else {
+				return null;
+			}
+			return stringBuilder.toString();
+
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	public String deleteRequest(URL url) {
+		try {
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setReadTimeout(timeout);
+			connection.setConnectTimeout(timeout);
+			connection.setRequestMethod("DELETE");
+
+			/* sets default headers */
+			headers.forEach(connection::addRequestProperty);
+
+			/* tries to connect the webserver */
+			connection.connect();
+
+			out<URL> newUrl = YYStal.out();
+			if (redirectCheck(connection, newUrl)) {
+				return downloadString(newUrl.get());
+			}
+			responseHeaders = connection.getHeaderFields();
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+				return reader.lines().collect(Collectors.joining("\n"));
+			}
+
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public String deleteRequest(String url) {
+		try {
+			return deleteRequest(new URL(url));
+		} catch (MalformedURLException ex) {
+			return null;
+		}
+	}
+
+
 	public static boolean redirectCheck(HttpURLConnection connection, out<URL> url) {
 		try {
 			int responseCode = connection.getResponseCode();
@@ -288,6 +394,7 @@ public class YWebClient {
 				return true;
 			}
 		} catch (Exception ex) {}
+
 		return false;
 	}
 

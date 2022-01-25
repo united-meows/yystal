@@ -29,7 +29,6 @@ public class YDatabaseClient {
 				connected = true;
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			connected = false;
 		}
 	}

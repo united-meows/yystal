@@ -101,8 +101,15 @@ public class YDatabaseClient {
 		}
 	}
 
+	public boolean connected() {
+		return connected;
+	}
 
-/*	public boolean insertMulti(String tableName, List<List<Object>> dataList, String... columns) {
+	public Connection connection() {
+		return connection;
+	}
+
+	/*	public boolean insertMulti(String tableName, List<List<Object>> dataList, String... columns) {
 		String sql = "INSERT INTO " + tableName + "(" + String.join(",", columns) + " VALUES ";
 
 	}*/

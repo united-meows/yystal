@@ -67,7 +67,7 @@ public enum YTestStart {
 				kThread.sleep(50);
 			}
 		}
-		long secondCheck = stopWatcher() - massConnectClientSize * 50;
+		long secondCheck = stopWatcher() - massConnectClientSize * 50; /* remove the amount of time we sleep */;	
 		System.out.println("Mass connect check took: (" + massConnectClientSize + " clients) " + secondCheck + "ms");
 		System.out.println("=============================");
 		kThread.sleep(1099900);

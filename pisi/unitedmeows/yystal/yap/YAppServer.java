@@ -80,10 +80,6 @@ public class YAppServer {
 		return -1;
 	}
 
-	/*
-		app => { name: 'Skuxx', version: 1.8, id:'$353tkşlrdgdfgdfg' }
-	 */
-
 	protected String createAppIntroduction() {
 		SxfFile file = new SxfFile();
 		SxfDataBlock app = new SxfDataBlock();

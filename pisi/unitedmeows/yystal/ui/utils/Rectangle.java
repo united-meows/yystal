@@ -1,5 +1,8 @@
 package pisi.unitedmeows.yystal.ui.utils;
 
+
+import org.joml.Vector4f;
+
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_FLAT;
 import static org.lwjgl.opengl.GL11.GL_LINE_SMOOTH;
@@ -19,7 +22,6 @@ import static org.lwjgl.opengl.GL11.glPushMatrix;
 import static org.lwjgl.opengl.GL11.glShadeModel;
 import static org.lwjgl.opengl.GL11.glVertex2d;
 
-import org.joml.Vector4f;
 
 public class Rectangle {
 	public Vector4f vector;

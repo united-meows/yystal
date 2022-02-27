@@ -27,6 +27,7 @@ import pisi.unitedmeows.yystal.ui.utils.*;
 import pisi.unitedmeows.yystal.utils.Vector2f;
 
 public class YWindow extends YContainer {
+
 	private final Vector2f /* yystal vector2f :D.d:D */ mouseCoords = new Vector2f(-1F, -1F);
 	private final Vector2f mouseDelta = new Vector2f(-1F, -1F);
 	private final String title;

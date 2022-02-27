@@ -2,7 +2,6 @@ package pisi.unitedmeows.yystal.logger.impl;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
-import org.lwjglx.Sys;
 import pisi.unitedmeows.yystal.file.YFile;
 import pisi.unitedmeows.yystal.logger.ILogger;
 

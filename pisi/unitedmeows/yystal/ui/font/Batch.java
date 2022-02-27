@@ -92,10 +92,10 @@ public class Batch {
 		final float y0 = y;
 		final float x1 = x + scale * charInfo.width;
 		final float y1 = y + scale * charInfo.height;
-		final float ux0 = charInfo.textureCoordinates[0].x;
-		final float uy0 = charInfo.textureCoordinates[0].y;
-		final float ux1 = charInfo.textureCoordinates[1].x;
-		final float uy1 = charInfo.textureCoordinates[1].y;
+		final float ux0 = charInfo.textureCoordinates[0].getX();
+		final float uy0 = charInfo.textureCoordinates[0].getY();
+		final float ux1 = charInfo.textureCoordinates[1].getX();
+		final float uy1 = charInfo.textureCoordinates[1].getY();
 		int index = size * 7;
 		vertices[index] = x1;
 		vertices[index + 1] = y0;

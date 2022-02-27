@@ -7,6 +7,7 @@ import pisi.unitedmeows.yystal.networking.server.extension.STcpExtension;
 import pisi.unitedmeows.yystal.utils.MemoryWriter;
 
 import java.io.DataInputStream;
+import java.io.IOException;
 
 public class STcpFixedSize extends STcpExtension {
 
@@ -21,6 +22,7 @@ public class STcpFixedSize extends STcpExtension {
 			inputStream.read(data);
 			cancelDefaultReader.set(true);
 			readData.set(data);
+
 		} catch (Exception ex) {
 		}
 	}
@@ -34,6 +36,9 @@ public class STcpFixedSize extends STcpExtension {
 			memoryWriter.write(rawData);
 			data.set(memoryWriter.getBytes());
 			send.set(true);
+			try {
+				memoryWriter.close();
+			} catch (IOException e) {}
 		} catch (Exception ex) {
 		}
 	}

@@ -6,6 +6,7 @@ import pisi.unitedmeows.yystal.networking.client.extension.CTcpExtension;
 import pisi.unitedmeows.yystal.utils.MemoryWriter;
 
 import java.io.DataInputStream;
+import java.io.IOException;
 
 public class CTcpFixedSize extends CTcpExtension {
 
@@ -21,6 +22,9 @@ public class CTcpFixedSize extends CTcpExtension {
 		}
 		data.set(memoryWriter.getBytes());
 		send.set(true);
+		try {
+			memoryWriter.close();
+		} catch (IOException e) {}
 	}
 
 	@Override

@@ -37,8 +37,6 @@ public class CTcpLineRead extends CTcpExtension {
 			}
 			cancelDefaultReader.set(true);
 			readData.set(readLine.getBytes(StandardCharsets.UTF_8));
-		} catch (Exception ex) {
-
-		}
+		} catch (Exception ex) {}
 	}
 }

@@ -1,6 +1,7 @@
 package pisi.unitedmeows.yystal.ui.font.data;
 
-import org.joml.Vector2f;
+
+import pisi.unitedmeows.yystal.utils.Vector2f;
 
 public class CharInfo {
 	public int sourceX;

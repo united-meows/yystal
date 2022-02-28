@@ -21,7 +21,7 @@ public class YapClient {
 			}
 		});
 	}
-
+ 
 	public void connect(IPAddress address, int port) {
 		tcpClient.connect(address, port);
 	}

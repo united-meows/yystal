@@ -131,8 +131,7 @@ public class StringCache {
 			for (int index = 0; index < length; index++) {
 				final char c1 = str.charAt(index);
 				final char c2 = other.charAt(index);
-				if (c1 != c2 && (c1 < '0' || c1 > '9' || c2 < '0' || c2 > '9' || colorCode))
-					return false;
+				if (c1 != c2 && (c1 < '0' || c1 > '9' || c2 < '0' || c2 > '9' || colorCode)) return false;
 				colorCode = (c1 == '\u00A7');
 			}
 			return true;
@@ -254,10 +253,10 @@ public class StringCache {
 	 * @param fontSize  the new point size
 	 * @param antiAlias turn on anti aliasing
 	 */
-	public void setDefaultFont(final float fontSize, final boolean antiAlias) {
+	public void setDefaultFont(final String name, final float fontSize, final boolean antiAlias) {
 		/* Change the font in the glyph cache and clear the string cache so all strings have to be re-layed
 		 * out and re-rendered */
-		glyphCache.setDefaultFont(fontSize, antiAlias);
+		glyphCache.setDefaultFont(name, fontSize, antiAlias);
 		antiAliasEnabled = antiAlias;
 		weakRefCache.clear();
 		stringCache.clear();
@@ -337,8 +336,7 @@ public class StringCache {
 				 * glyphs between them. These new adjusted stringIndex can now be compared against the color
 				 * stringIndex during rendering. It also allows lookups of ASCII digits in the original string for
 				 * fast glyph replacement during rendering. */
-				while (colorIndex < entry.colors.length
-							&& glyph.stringIndex + shift >= entry.colors[colorIndex].stringIndex) {
+				while (colorIndex < entry.colors.length && glyph.stringIndex + shift >= entry.colors[colorIndex].stringIndex) {
 					shift += 2;
 					colorIndex++;
 				}
@@ -405,8 +403,7 @@ public class StringCache {
 			 * original string. */
 			System.arraycopy(text, next - shift + 2, text, next - shift, text.length - next - 2);
 			/* Decode escape code used in the string and change current font style / color based on it */
-			final int code = "0123456789abcdefklmnor"
-						.indexOf(Character.toLowerCase(str.charAt(next + 1)));
+			final int code = "0123456789abcdefklmnor".indexOf(Character.toLowerCase(str.charAt(next + 1)));
 			switch (code) {
 			/* Random style; TODO: NOT IMPLEMENTED YET */
 			case 16:
@@ -478,17 +475,14 @@ public class StringCache {
 	 *
 	 * @return the total advance (horizontal distance) of this string
 	 */
-	private float layoutBidiString(final List<GlyphCache.Glyph> glyphList, final char[] text,
-				final int start, final int limit, final ColorCode[] colors) {
+	private float layoutBidiString(final List<GlyphCache.Glyph> glyphList, final char[] text, final int start, final int limit, final ColorCode[] colors) {
 		float advance = 0;
 		/* Avoid performing full bidirectional analysis if text has no "strong" right-to-left characters */
 		if (Bidi.requiresBidi(text, start, limit)) {
 			/* Note that while requiresBidi() uses start/limit the Bidi constructor uses start/length */
-			final Bidi bidi = new Bidi(text, start, null, 0, limit - start,
-						Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT);
+			final Bidi bidi = new Bidi(text, start, null, 0, limit - start, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT);
 			/* If text is entirely right-to-left, then insert an EntryText node for the entire string */
-			if (bidi.isRightToLeft()) return layoutStyle(glyphList, text, start, limit,
-						Font.LAYOUT_RIGHT_TO_LEFT, advance, colors);
+			if (bidi.isRightToLeft()) return layoutStyle(glyphList, text, start, limit, Font.LAYOUT_RIGHT_TO_LEFT, advance, colors);
 			else {
 				final int runCount = bidi.getRunCount();
 				final byte[] levels = new byte[runCount];
@@ -506,20 +500,15 @@ public class StringCache {
 				for (int visualIndex = 0; visualIndex < runCount; visualIndex++) {
 					final int logicalIndex = ranges[visualIndex];
 					/* An odd numbered level indicates right-to-left ordering */
-					final int layoutFlag = (bidi.getRunLevel(logicalIndex) & 1) == 1
-								? Font.LAYOUT_RIGHT_TO_LEFT
-								: Font.LAYOUT_LEFT_TO_RIGHT;
-					advance = layoutStyle(glyphList, text, start + bidi.getRunStart(logicalIndex),
-								start + bidi.getRunLimit(logicalIndex), layoutFlag, advance, colors);
+					final int layoutFlag = (bidi.getRunLevel(logicalIndex) & 1) == 1 ? Font.LAYOUT_RIGHT_TO_LEFT : Font.LAYOUT_LEFT_TO_RIGHT;
+					advance = layoutStyle(glyphList, text, start + bidi.getRunStart(logicalIndex), start + bidi.getRunLimit(logicalIndex), layoutFlag, advance, colors);
 				}
 			}
 			return advance;
-		} else return layoutStyle(glyphList, text, start, limit, Font.LAYOUT_LEFT_TO_RIGHT, advance,
-					colors);
+		} else return layoutStyle(glyphList, text, start, limit, Font.LAYOUT_LEFT_TO_RIGHT, advance, colors);
 	}
 
-	private float layoutStyle(final List<GlyphCache.Glyph> glyphList, final char[] text, int start,
-				final int limit, final int layoutFlags, float advance, final ColorCode[] colors) {
+	private float layoutStyle(final List<GlyphCache.Glyph> glyphList, final char[] text, int start, final int limit, final int layoutFlags, float advance, final ColorCode[] colors) {
 		int currentFontStyle = Font.PLAIN;
 		/* Find ColorCode object with stripIndex <= start; that will have the font style in effect at the
 		 * beginning of this text run */
@@ -535,8 +524,7 @@ public class StringCache {
 			int next = limit;
 			/* In case of multiple consecutive color codes with the same stripIndex, select the last one which
 			 * will have active font style */
-			while (colorIndex >= 0 && colorIndex < (colors.length - 1)
-						&& colors[colorIndex].stripIndex == colors[colorIndex + 1].stripIndex) {
+			while (colorIndex >= 0 && colorIndex < (colors.length - 1) && colors[colorIndex].stripIndex == colors[colorIndex + 1].stripIndex) {
 				colorIndex++;
 			}
 			/* If an actual ColorCode object was found (colorIndex within the array), use its fontStyle for
@@ -554,8 +542,7 @@ public class StringCache {
 				}
 			}
 			/* Layout the string segment with the style currently selected by the last color code */
-			advance = layoutString(glyphList, text, start, next, layoutFlags, advance,
-						currentFontStyle);
+			advance = layoutString(glyphList, text, start, next, layoutFlags, advance, currentFontStyle);
 			start = next;
 		}
 		return advance;
@@ -580,8 +567,7 @@ public class StringCache {
 	 *         argument TODO Correctly handling RTL font selection requires scanning the sctring from
 	 *         RTL as well. TODO Use bitmap fonts as a fallback if no OpenType font could be found
 	 */
-	private float layoutString(final List<GlyphCache.Glyph> glyphList, final char[] text, int start,
-				final int limit, final int layoutFlags, float advance, final int style) {
+	private float layoutString(final List<GlyphCache.Glyph> glyphList, final char[] text, int start, final int limit, final int layoutFlags, float advance, final int style) {
 		/* Convert all digits in the string to a '0' before layout to ensure that any glyphs replaced on the
 		 * fly will all have the same positions. Under Windows, Java's "SansSerif" logical font uses the
 		 * "Arial" font for digits, in which the "1" digit is slightly narrower than all other digits.
@@ -635,9 +621,7 @@ public class StringCache {
 	 * @todo need to ajust position of all glyphs if digits are present, by assuming every digit should
 	 *       be 0 in length
 	 */
-	private float layoutFont(final List<GlyphCache.Glyph> glyphList, final char[] text,
-				final int start, final int limit, final int layoutFlags, float advance,
-				final Font font) {
+	private float layoutFont(final List<GlyphCache.Glyph> glyphList, final char[] text, final int start, final int limit, final int layoutFlags, float advance, final Font font) {
 		/* Ensure that all glyphs used by the string are pre-rendered and cached in the texture. Only safe
 		 * to do so from the main thread because cacheGlyphs() can crash LWJGL if it makes OpenGL calls from
 		 * any other thread. In this case, cacheString() will also not insert the entry into the stringCache
@@ -648,8 +632,7 @@ public class StringCache {
 		}
 		/* Creating a GlyphVector takes care of all language specific OpenType glyph substitutions and
 		 * positionings */
-		final GlyphVector vector = glyphCache.layoutGlyphVector(font, text, start, limit,
-					layoutFlags);
+		final GlyphVector vector = glyphCache.layoutGlyphVector(font, text, start, limit, layoutFlags);
 		/* Extract all needed information for each glyph from the GlyphVector so it won't be needed for
 		 * actual rendering. Note that initially, glyph.start holds the character index into the stripped
 		 * text array. But after the entire string is layed out, this field will be adjusted on every Glyph

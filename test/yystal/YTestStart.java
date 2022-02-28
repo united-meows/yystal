@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.client.YTcpClient;
 import pisi.unitedmeows.yystal.networking.server.YTcpServer;
+import pisi.unitedmeows.yystal.ui.YWindow;
 import pisi.unitedmeows.yystal.utils.YRandom;
 import pisi.unitedmeows.yystal.utils.kThread;
 
@@ -15,10 +16,10 @@ public enum YTestStart {
 	gaming; /* :D */
 
 	public static void main(final String[] args) {
-		//		if (true) {
-		//			new YWindow(":DDDDDDDD", 800, 800).open();
-		//			return;
-		//		}
+		if (true) {
+			new YWindow(":DDDDDDDD", 800, 800).open();
+			return;
+		}
 		System.out.println("Starting..");
 		System.out.println("=============================");
 		int i = 100;

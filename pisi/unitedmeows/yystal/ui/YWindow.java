@@ -64,13 +64,14 @@ import org.lwjgl.system.MemoryStack;
 import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.clazz.prop;
 import pisi.unitedmeows.yystal.ui.element.YContainer;
-import pisi.unitedmeows.yystal.ui.font.StringCache;
 import pisi.unitedmeows.yystal.ui.font.TTFRenderer;
 import pisi.unitedmeows.yystal.ui.utils.NullCheck;
 import pisi.unitedmeows.yystal.ui.utils.Rectangle;
 import pisi.unitedmeows.yystal.ui.utils.Vertex2f;
 import pisi.unitedmeows.yystal.ui.utils.YOrigin;
 import pisi.unitedmeows.yystal.utils.Vector2f;
+import pisi.unitedmeows.yystal.utils.Vector4;
+import pisi.unitedmeows.yystal.utils.kThread;
 
 public class YWindow extends YContainer {
 	private final Vector2f /* yystal vector2f :D.d:D */ mouseCoords = new Vector2f(-1F, -1F);
@@ -83,12 +84,6 @@ public class YWindow extends YContainer {
 	public static FloatBuffer fbView = BufferUtils.createFloatBuffer(16);
 	public static FloatBuffer fbProjection = BufferUtils.createFloatBuffer(16);
 	public prop<Color> backgroundColor = new prop<>(Color.RED);
-
-	private String getPathFromAssets(final String file) {
-		if (file == null) /* add check for linux */
-			return "/" + Object.class.getResource("/pisi/unitedmeows/yystal/ui/assets/").toString().substring(6);
-		return "/" + Object.class.getResource(String.format("/pisi/unitedmeows/yystal/ui/assets/%s", file)).toString().substring(6) /* to get rid of file:/ */;
-	}
 
 	public YWindow(final String _title, final int _width, final int _height) {
 		super(new Vertex2f(0, 0), new Vector2f(_width, _height), YOrigin.TOP_LEFT);
@@ -200,6 +195,8 @@ public class YWindow extends YContainer {
 		glfwSetWindowShouldClose(window, true);
 	}
 
+	private TTFRenderer ttfRenderer;
+
 	private void loop() {
 		int glErrCode;
 		glEnable(GL_BLEND);
@@ -212,33 +209,53 @@ public class YWindow extends YContainer {
 		glOrtho(0, width(), height(), 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		glDisable(GL_TEXTURE_2D);
-		final StringCache cache = new StringCache();
-		cache.setDefaultFont(54F, true);
-		final TTFRenderer ttfRenderer = new TTFRenderer(cache);
+		final String fontName = "comfortaa";
+		final Vector4<Float, Float, Float, Float> vector = new Vector4<>(1F, 200F, 1F, 30F);
+		// fontrenderer will generate all sizes from 1 to 100 with increments of .5F
+		// 30F is the default size
+		ttfRenderer = new TTFRenderer(fontName, vector, true);
 		while (!glfwWindowShouldClose(window)) {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glClearColor(backgroundColor.get().getRed(), backgroundColor.get().getGreen(), backgroundColor.get().getBlue(), 1.0F);
-			final int mouseX = mouseCoords.getX().intValue();
-			final int mouseY = mouseCoords.getY().intValue();
-			final double currentTime = glfwGetTime();
-			frameCount++;
-			if (currentTime - previousTime >= 1.0) {
-				lastCalculation = frameCount;
-				frameCount = 0;
-				previousTime = currentTime;
-			}
-			render: {
-				final Rectangle rectangle = new Rectangle(0, 0, 800, 800);
-				if (!NullCheck.CHECK.isNull(rectangle)) {
-					rectangle.draw(-1, -8345634);
+			if (ttfRenderer == null) {
+				kThread.sleep(5L);
+				System.out.println("waiting for fontrenderer...");
+			} else {
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				glClearColor(backgroundColor.get().getRed(), backgroundColor.get().getGreen(), backgroundColor.get().getBlue(), 1.0F);
+				final int mouseX = mouseCoords.getX().intValue();
+				final int mouseY = mouseCoords.getY().intValue();
+				final double currentTime = glfwGetTime();
+				frameCount++;
+				if (currentTime - previousTime >= 1.0) {
+					lastCalculation = frameCount;
+					frameCount = 0;
+					previousTime = currentTime;
 				}
-				ttfRenderer.drawString(String.format("💀 fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 60, Color.BLACK.getRGB(), false);
-			}
-			glfwPollEvents();
-			glfwSwapBuffers(window);
-			glErrCode = glGetError();
-			if (glErrCode != GL_NO_ERROR) {
-				System.out.printf("OpenGL Error %s %s", glErrCode, System.lineSeparator());
+				render: {
+					final Rectangle rectangle = new Rectangle(0, 0, 800, 800);
+					if (!NullCheck.CHECK.isNull(rectangle)) {
+						rectangle.draw(-1, -8345634);
+					}
+					ttfRenderer.drawString(String.format("💀 fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 60, Color.BLACK.getRGB(), false);
+					ttfRenderer.drawString(String.format("fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 100, Color.BLACK.getRGB(), false);
+					GL11.glPushMatrix();
+					GL11.glTranslatef(mouseX, mouseY, 0);
+					float f = 2.25F;
+					GL11.glScalef(f, f, f);
+					ttfRenderer.drawString("mouse", 0, 0, Color.BLACK.getRGB(), false);
+					GL11.glPopMatrix();
+					GL11.glPushMatrix();
+					GL11.glTranslatef(mouseX, mouseY, 0);
+					float f2 = 2.5F;
+					GL11.glScalef(f2, f2, f2);
+					ttfRenderer.drawString("mouse", 0, 100, Color.BLACK.getRGB(), false);
+					GL11.glPopMatrix();
+				}
+				glfwPollEvents();
+				glfwSwapBuffers(window);
+				glErrCode = glGetError();
+				if (glErrCode != GL_NO_ERROR) {
+					System.out.printf("OpenGL Error %s %s", glErrCode, System.lineSeparator());
+				}
 			}
 		}
 	}

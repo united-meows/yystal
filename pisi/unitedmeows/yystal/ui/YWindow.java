@@ -1,7 +1,52 @@
 package pisi.unitedmeows.yystal.ui;
 
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
+import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
+import static org.lwjgl.glfw.GLFW.GLFW_SAMPLES;
+import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
+import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
+import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
+import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
+import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
+import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
+import static org.lwjgl.glfw.GLFW.glfwHideWindow;
+import static org.lwjgl.glfw.GLFW.glfwInit;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowSize;
+import static org.lwjgl.glfw.GLFW.glfwShowWindow;
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
+import static org.lwjgl.glfw.GLFW.glfwWindowHint;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_MODELVIEW;
+import static org.lwjgl.opengl.GL11.GL_NO_ERROR;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glEnableClientState;
+import static org.lwjgl.opengl.GL11.glGetError;
+import static org.lwjgl.opengl.GL11.glMatrixMode;
+import static org.lwjgl.opengl.GL11.glOrtho;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -19,15 +64,15 @@ import org.lwjgl.system.MemoryStack;
 import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.clazz.prop;
 import pisi.unitedmeows.yystal.ui.element.YContainer;
-import pisi.unitedmeows.yystal.ui.font.Batch;
-import pisi.unitedmeows.yystal.ui.font.Shader;
-import pisi.unitedmeows.yystal.ui.font.data.CFont;
-import pisi.unitedmeows.yystal.ui.font.data.CharInfo;
-import pisi.unitedmeows.yystal.ui.utils.*;
+import pisi.unitedmeows.yystal.ui.font.StringCache;
+import pisi.unitedmeows.yystal.ui.font.TTFRenderer;
+import pisi.unitedmeows.yystal.ui.utils.NullCheck;
+import pisi.unitedmeows.yystal.ui.utils.Rectangle;
+import pisi.unitedmeows.yystal.ui.utils.Vertex2f;
+import pisi.unitedmeows.yystal.ui.utils.YOrigin;
 import pisi.unitedmeows.yystal.utils.Vector2f;
 
 public class YWindow extends YContainer {
-
 	private final Vector2f /* yystal vector2f :D.d:D */ mouseCoords = new Vector2f(-1F, -1F);
 	private final Vector2f mouseDelta = new Vector2f(-1F, -1F);
 	private final String title;
@@ -37,10 +82,7 @@ public class YWindow extends YContainer {
 	public static FloatBuffer fbModel = BufferUtils.createFloatBuffer(16);
 	public static FloatBuffer fbView = BufferUtils.createFloatBuffer(16);
 	public static FloatBuffer fbProjection = BufferUtils.createFloatBuffer(16);
-
-	private CFont font;
 	public prop<Color> backgroundColor = new prop<>(Color.RED);
-
 
 	private String getPathFromAssets(final String file) {
 		if (file == null) /* add check for linux */
@@ -49,7 +91,7 @@ public class YWindow extends YContainer {
 	}
 
 	public YWindow(final String _title, final int _width, final int _height) {
-		super(new Vertex2f(0, 0), new Vector2f((float)_width, (float)_height), YOrigin.TOP_LEFT);
+		super(new Vertex2f(0, 0), new Vector2f(_width, _height), YOrigin.TOP_LEFT);
 		title = _title;
 	}
 
@@ -58,9 +100,13 @@ public class YWindow extends YContainer {
 		windowThread.start();
 	}
 
-	public int width() { return Math.round(size.getX()); }
+	public int width() {
+		return Math.round(size.getX());
+	}
 
-	public int height() { return Math.round(size.getY()); }
+	public int height() {
+		return Math.round(size.getY());
+	}
 
 	public YWindow width(final int _width) {
 		size(_width, size.getY());
@@ -99,7 +145,9 @@ public class YWindow extends YContainer {
 		}
 	}
 
-	public boolean isResizable() { return resizable; }
+	public boolean isResizable() {
+		return resizable;
+	}
 
 	@SuppressWarnings("resource") // stfu ide
 	private void _open() {
@@ -112,7 +160,6 @@ public class YWindow extends YContainer {
 		glfwWindowHint(GLFW_SAMPLES, 4);
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_RESIZABLE, resizable ? GLFW_TRUE : GLFW_FALSE);
-
 		window = glfwCreateWindow(width(), height(), title, NULL, NULL);
 		if (window == NULL) /* throw an exception */
 			return;
@@ -146,28 +193,18 @@ public class YWindow extends YContainer {
 		glfwShowWindow(window);
 		YYStal.registerWindow(this);
 		// capabilities should be created last afaik...
-		font = new CFont(getPathFromAssets("font.ttf"), 64);
 		loop();
 	}
 
-	public void close() { glfwSetWindowShouldClose(window, true); }
+	public void close() {
+		glfwSetWindowShouldClose(window, true);
+	}
 
 	private void loop() {
 		int glErrCode;
-		final Shader fontShader = new Shader(getPathFromAssets(null), getPathFromAssets("fontShader.vertex"), getPathFromAssets("fontShader.fragment"));
-		final Shader sdfShader = new Shader(getPathFromAssets(null), getPathFromAssets("sdfShader.vertex"), getPathFromAssets("sdfShader.fragment"));
-		final Batch batch = new Batch();
-		batch.shader = fontShader;
-		batch.sdfShader = sdfShader;
-		batch.font = font;
-		batch.initBatch(this);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		final CharInfo oneQuad = new CharInfo(0, 0, 1, 1);
-		oneQuad.calculateTextureCoordinates(1, 1);
 		double previousTime = glfwGetTime();
-
-
 		int frameCount = 0;
 		int lastCalculation = 0;
 		glEnableClientState(GL11.GL_VERTEX_ARRAY);
@@ -175,14 +212,14 @@ public class YWindow extends YContainer {
 		glOrtho(0, width(), height(), 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		glDisable(GL_TEXTURE_2D);
+		final StringCache cache = new StringCache();
+		cache.setDefaultFont(54F, true);
+		final TTFRenderer ttfRenderer = new TTFRenderer(cache);
 		while (!glfwWindowShouldClose(window)) {
-
-
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glClearColor(backgroundColor.get().getRed(), backgroundColor.get().getGreen(), backgroundColor.get().getBlue(), 1.0F);
-			// rendering here
 			final int mouseX = mouseCoords.getX().intValue();
-			final int mouseY = height() - mouseCoords.getY().intValue();
+			final int mouseY = mouseCoords.getY().intValue();
 			final double currentTime = glfwGetTime();
 			frameCount++;
 			if (currentTime - previousTime >= 1.0) {
@@ -190,39 +227,27 @@ public class YWindow extends YContainer {
 				frameCount = 0;
 				previousTime = currentTime;
 			}
-
-			final Rectangle rectangle = new Rectangle(0, 0, 1920, 1080);
-			batch.addText(String.format("fps -> %s", lastCalculation), 0, 0, 1F, getRainbow(0L, 1F).getRGB());
-			batch.addText("font 2x :D", mouseX, mouseY + 70, 2.0F, 7964363);
-			batch.addText("font :D", mouseX, mouseY, 1.0F, 0xAA01BB);
-			batch.addText("font with 0.5 scale???", mouseX, mouseY - 35, 5, getRainbow(0L, 1F).getRGB());
-			batch.addText("font with 0.25 scale???", mouseX, mouseY - 60, 0.25F, 8281781);
-			batch.addText("font with 0.125 scale???", mouseX, mouseY - 70, 0.125F, -1);
-			batch.flushBatch();
-
-			if (!NullCheck.CHECK.isNull(rectangle)) {
-				rectangle.draw(-8345634);
+			render: {
+				final Rectangle rectangle = new Rectangle(0, 0, 800, 800);
+				if (!NullCheck.CHECK.isNull(rectangle)) {
+					rectangle.draw(-1, -8345634);
+				}
+				ttfRenderer.drawString(String.format("💀 fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 60, Color.BLACK.getRGB(), false);
 			}
-
-
-
-
 			glfwPollEvents();
 			glfwSwapBuffers(window);
 			glErrCode = glGetError();
 			if (glErrCode != GL_NO_ERROR) {
-				//System.out.printf("OpenGL Error %s %s", glErrCode, System.lineSeparator());
+				System.out.printf("OpenGL Error %s %s", glErrCode, System.lineSeparator());
 			}
 		}
 	}
 
 	@Override
-	public void draw() {
-
-	}
+	public void draw() {}
 
 	@Override
-	public boolean isMouseOver(float mouseX, float mouseY) {
+	public boolean isMouseOver(final float mouseX, final float mouseY) {
 		return glfwGetWindowAttrib(window, GLFW_FOCUSED) == 1;
 	}
 
@@ -232,12 +257,5 @@ public class YWindow extends YContainer {
 
 	public float mouseY() {
 		return mouseCoords.getY();
-	}
-
-	public Color getRainbow(final long offset, final float fade) {
-		final float hue = (System.nanoTime() + offset) / 5.0E9F % 1.0F;
-		final long color = Long.parseLong(Integer.toHexString(Color.HSBtoRGB(hue, 1.0F, 1.0F)), 16);
-		final Color c = new Color((int) color);
-		return new Color(c.getRed() / 255.0F * fade, c.getGreen() / 255.0F * fade, c.getBlue() / 255.0F * fade, c.getAlpha() / 255.0F);
 	}
 }

@@ -10,6 +10,7 @@ import pisi.unitedmeows.yystal.networking.events.SConnectionReceivedEvent;
 import pisi.unitedmeows.yystal.networking.events.SDataReceivedEvent;
 import pisi.unitedmeows.yystal.networking.server.extension.STcpExtension;
 import pisi.unitedmeows.yystal.networking.server.extension.impl.STcpFixedSize;
+import pisi.unitedmeows.yystal.networking.server.extension.impl.STcpLineRead;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -110,6 +111,11 @@ public class YTcpServer {
 
 	public YTcpServer makeFixed() {
 		extensions().add(new STcpFixedSize());
+		return this;
+	}
+
+	public YTcpServer makeLineBased() {
+		extensions.add(new STcpLineRead());
 		return this;
 	}
 

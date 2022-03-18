@@ -519,4 +519,8 @@ public class YWebClient {
 		headers.put(header, value);
 		return this;
 	}
+
+	public Map<String, String> headers() {
+		return headers;
+	}
 }

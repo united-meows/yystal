@@ -213,7 +213,7 @@ public class YWindow extends YContainer {
 		glMatrixMode(GL_MODELVIEW);
 		glDisable(GL_TEXTURE_2D);
 		final StringCache cache = new StringCache();
-		cache.setDefaultFont(54F, true);
+		cache.setFont("samsung", 54F, true);
 		final TTFRenderer ttfRenderer = new TTFRenderer(cache);
 		while (!glfwWindowShouldClose(window)) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -232,7 +232,7 @@ public class YWindow extends YContainer {
 				if (!NullCheck.CHECK.isNull(rectangle)) {
 					rectangle.draw(-1, -8345634);
 				}
-				ttfRenderer.drawString(String.format("💀 fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 60, Color.BLACK.getRGB(), false);
+				ttfRenderer.drawString(String.format("YWindow test -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 60, Color.BLACK.getRGB(), false);
 			}
 			glfwPollEvents();
 			glfwSwapBuffers(window);

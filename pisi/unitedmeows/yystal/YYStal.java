@@ -7,6 +7,7 @@ import pisi.unitedmeows.yystal.clazz.valuelock;
 import pisi.unitedmeows.yystal.exception.YEx;
 import pisi.unitedmeows.yystal.exception.YExManager;
 import pisi.unitedmeows.yystal.hook.YString;
+import pisi.unitedmeows.yystal.logger.impl.YLogger;
 import pisi.unitedmeows.yystal.parallel.ITaskPool;
 import pisi.unitedmeows.yystal.parallel.pools.BasicTaskPool;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
@@ -93,8 +94,6 @@ public class YYStal {
 		valueLocks.put(name, lock);
 		lock.__setup();
 
-
-
 		return lock;
 	}
 
@@ -106,6 +105,14 @@ public class YYStal {
 		for (int i = 0; i < count; i++) {
 			runnable.run();
 		}
+	}
+
+	public static YLogger createLogger(Class<?> clazz) {
+		return new YLogger(clazz);
+	}
+
+	public static YLogger createLogger(Class<?> clazz, final String name) {
+		return new YLogger(clazz, name);
 	}
 
 	public static YWindow currentWindow() {

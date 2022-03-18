@@ -7,6 +7,8 @@ import pisi.unitedmeows.yystal.networking.events.CDataReceivedEvent;
 import pisi.unitedmeows.yystal.utils.MemoryReader;
 import pisi.unitedmeows.yystal.yap.events.YCSignalReceived;
 
+import java.io.IOException;
+
 public class YapClient {
 
 	private YTcpClient tcpClient;
@@ -17,7 +19,9 @@ public class YapClient {
 		tcpClient.dataReceivedEvent.bind(new CDataReceivedEvent() {
 			@Override
 			public void onDataReceived(byte[] data) {
-				signalReceivedEvent.fire(new YapSignal(new MemoryReader(data)));
+				try (MemoryReader memoryReader = new MemoryReader(data)){
+					signalReceivedEvent.fire(new YapSignal(memoryReader));
+				} catch (IOException ex) {}
 			}
 		});
 	}
@@ -36,12 +40,10 @@ public class YapClient {
 	}
 
 	public void send(YapSignal signal) {
-		System.out.println("writing data");
 		tcpClient.send(signal.reader().getBytes());
 	}
 
 	public void send(YapSignalBuilder builder) {
-		System.out.println("writing data");
 		tcpClient.send(builder.buildBytes());
 	}
 

@@ -21,7 +21,6 @@ public class event<X extends delegate> {
 	public void fire(Object... params) {
 		for (Pair<delegate, Method> bound : delegateMap.values()) {
 			try {
-
 				bound.item2().invoke(bound.item1(), params);
 			} catch (Exception ex) {
 				ex.printStackTrace();

@@ -24,7 +24,6 @@ public class YTcpEchoServer {
 		tcpServer.dataReceiveEvent.bind(new SDataReceivedEvent() {
 			@Override
 			public void onClientDataReceived(YSocketClient client, byte[] data) {
-				System.out.println(new String(data) + " < RECEIVED");
 				if (data.length < 8192) {
 					ref<Boolean> canceled = YYStal.reference(false);
 					echoEvent.fire(client, data, canceled);

@@ -3,6 +3,7 @@ package pisi.unitedmeows.yystal.ui.font;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.font.GlyphVector;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.text.Bidi;
 import java.util.ArrayList;
@@ -254,10 +255,32 @@ public class StringCache {
 	 * @param fontSize  the new point size
 	 * @param antiAlias turn on anti aliasing
 	 */
-	public void setDefaultFont(final float fontSize, final boolean antiAlias) {
+	public void setFont(final float fontSize, final boolean antiAlias) {
 		/* Change the font in the glyph cache and clear the string cache so all strings have to be re-layed
 		 * out and re-rendered */
-		glyphCache.setDefaultFont(fontSize, antiAlias);
+		glyphCache.setFont("samsung", fontSize, antiAlias);
+		antiAliasEnabled = antiAlias;
+		weakRefCache.clear();
+		stringCache.clear();
+		/* Pre-cache the ASCII digits to allow for fast glyph substitution */
+		cacheDightGlyphs();
+	}
+
+	public void setFont(final String name, final float fontSize, final boolean antiAlias) {
+		/* Change the font in the glyph cache and clear the string cache so all strings have to be re-layed
+		 * out and re-rendered */
+		glyphCache.setFont(name, fontSize, antiAlias);
+		antiAliasEnabled = antiAlias;
+		weakRefCache.clear();
+		stringCache.clear();
+		/* Pre-cache the ASCII digits to allow for fast glyph substitution */
+		cacheDightGlyphs();
+	}
+
+	public void setFont(InputStream stream, final float fontSize, final boolean antiAlias) {
+		/* Change the font in the glyph cache and clear the string cache so all strings have to be re-layed
+		 * out and re-rendered */
+		glyphCache.setFont(stream, fontSize, antiAlias);
 		antiAliasEnabled = antiAlias;
 		weakRefCache.clear();
 		stringCache.clear();

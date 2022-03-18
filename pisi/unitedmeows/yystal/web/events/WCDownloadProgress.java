@@ -7,5 +7,5 @@ import pisi.unitedmeows.yystal.clazz.delegate;
 @Deprecated
 public interface WCDownloadProgress extends delegate {
 	@Deprecated
-	public void onProgress(double percent, long currentBytes, long totalBytes);
+	public void onProgress(@Deprecated double percent, long currentBytes, @Deprecated long totalBytes);
 }

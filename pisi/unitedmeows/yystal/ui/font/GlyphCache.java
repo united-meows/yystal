@@ -1,16 +1,13 @@
 package pisi.unitedmeows.yystal.ui.font;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,6 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.lwjgl.opengl.GL11;
+import pisi.unitedmeows.yystal.exception.YExManager;
+import pisi.unitedmeows.yystal.exception.impl.YexIO;
 
 // Credits to some guy on github, will credit later when I find the og source.
 public class GlyphCache {
@@ -208,6 +207,11 @@ public class GlyphCache {
 		// usedFonts.add(new Font(Font.SANS_SERIF, Font.PLAIN, 72)); //size 1 > 72
 	}
 
+	private String getPathFromAssets(final String file) {
+		if (file == null) /* add check for linux */
+			return "/" + Object.class.getResource("/pisi/unitedmeows/yystal/ui/assets/").toString().substring(6);
+		return "/" + Object.class.getResource(String.format("/pisi/unitedmeows/yystal/ui/assets/%s", file)).toString().substring(6) /* to get rid of file:/ */;
+	}
 	/**
 	 * Change the default font used to pre-render glyph images. If this method is called at runtime, the
 	 * existing glyph images will remain cached in their respective textures and will remain accessible
@@ -217,18 +221,32 @@ public class GlyphCache {
 	 *
 	 * @param size the new point size
 	 */
-	void setDefaultFont(final float size, final boolean antiAlias) {
+	void setFont(final String name, final float size, final boolean antiAlias) {
 		usedFonts.clear();
-		try (
-					// TODO
-					InputStream stream = getClass().getResourceAsStream("add path lol")
-		) {
+		try (InputStream stream = new FileInputStream(new File(getPathFromAssets(name + ".ttf")))) {
 			final Font f = Font.createFont(Font.TRUETYPE_FONT, stream);
 			usedFonts.add(f);
 		}
 		catch (final Exception exception) {
-			usedFonts.add(new Font("Comfortaa", Font.PLAIN, (int) size));
-			exception.printStackTrace();
+			usedFonts.add(new Font("Arial", Font.PLAIN, (int) size));
+			YExManager.pop(new YexIO("Couldn't load the font using default font instead"));
+		}
+		fontSize = size;
+		antiAliasEnabled = antiAlias;
+		setRenderingHints();
+	}
+
+	void setFont(final InputStream stream, final float size, final boolean antiAlias) {
+		usedFonts.clear();
+		final Font f;
+		try {
+			f = Font.createFont(Font.TRUETYPE_FONT, stream);
+			usedFonts.add(f);
+
+		}
+		catch (final Exception exception) {
+			usedFonts.add(new Font("Arial", Font.PLAIN, (int) size));
+			YExManager.pop(new YexIO("Couldn't load the font using default font instead"));
 		}
 		fontSize = size;
 		antiAliasEnabled = antiAlias;

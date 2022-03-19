@@ -1,13 +1,18 @@
 package pisi.unitedmeows.yystal.ui.font;
 
-import java.awt.*;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -19,8 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.lwjgl.opengl.GL11;
-import pisi.unitedmeows.yystal.exception.YExManager;
-import pisi.unitedmeows.yystal.exception.impl.YexIO;
 
 // Credits to some guy on github, will credit later when I find the og source.
 public class GlyphCache {
@@ -75,8 +78,7 @@ public class GlyphCache {
 	 * All font glyphs are packed inside this image and are then loaded from here into an OpenGL
 	 * texture.
 	 */
-	private final BufferedImage glyphCacheImage = new BufferedImage(TEXTURE_WIDTH, TEXTURE_HEIGHT,
-				BufferedImage.TYPE_INT_ARGB);
+	private final BufferedImage glyphCacheImage = new BufferedImage(TEXTURE_WIDTH, TEXTURE_HEIGHT, BufferedImage.TYPE_INT_ARGB);
 	/**
 	 * The Graphics2D associated with glyphCacheImage and used for bit blitting between stringImage.
 	 */
@@ -95,20 +97,16 @@ public class GlyphCache {
 	 * buffer uses big-endian byte ordering to ensure that the integers holding packed RGBA colors are
 	 * stored into memory in a predictable order.
 	 */
-	private final IntBuffer imageBuffer = ByteBuffer
-				.allocateDirect(4 * TEXTURE_WIDTH * TEXTURE_HEIGHT).order(ByteOrder.BIG_ENDIAN)
-				.asIntBuffer();
+	private final IntBuffer imageBuffer = ByteBuffer.allocateDirect(4 * TEXTURE_WIDTH * TEXTURE_HEIGHT).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
 	/**
 	 * A single integer direct buffer with native byte ordering used for returning values from
 	 * glGenTextures().
 	 */
-	private final IntBuffer singleIntBuffer = ByteBuffer.allocateDirect(4)
-				.order(ByteOrder.nativeOrder()).asIntBuffer();
+	private final IntBuffer singleIntBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 	/**
 	 * List of all available physical fonts on the system. Used by lookupFont() to find alternate fonts.
 	 */
-	private final List<Font> allFonts = Arrays
-				.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts());
+	private final List<Font> allFonts = Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts());
 	/**
 	 * A list of all fonts that have been returned so far by lookupFont(), and that will always be
 	 * searched first for a usable font before searching through allFonts[]. This list will only have
@@ -208,10 +206,9 @@ public class GlyphCache {
 	}
 
 	private String getPathFromAssets(final String file) {
-		if (file == null) /* add check for linux */
-			return "/" + Object.class.getResource("/pisi/unitedmeows/yystal/ui/assets/").toString().substring(6);
 		return "/" + Object.class.getResource(String.format("/pisi/unitedmeows/yystal/ui/assets/%s", file)).toString().substring(6) /* to get rid of file:/ */;
 	}
+
 	/**
 	 * Change the default font used to pre-render glyph images. If this method is called at runtime, the
 	 * existing glyph images will remain cached in their respective textures and will remain accessible
@@ -221,32 +218,15 @@ public class GlyphCache {
 	 *
 	 * @param size the new point size
 	 */
-	void setFont(final String name, final float size, final boolean antiAlias) {
+	void setDefaultFont(final String name, final float size, final boolean antiAlias) {
 		usedFonts.clear();
 		try (InputStream stream = new FileInputStream(new File(getPathFromAssets(name + ".ttf")))) {
 			final Font f = Font.createFont(Font.TRUETYPE_FONT, stream);
 			usedFonts.add(f);
 		}
 		catch (final Exception exception) {
-			usedFonts.add(new Font("Arial", Font.PLAIN, (int) size));
-			YExManager.pop(new YexIO("Couldn't load the font using default font instead"));
-		}
-		fontSize = size;
-		antiAliasEnabled = antiAlias;
-		setRenderingHints();
-	}
-
-	void setFont(final InputStream stream, final float size, final boolean antiAlias) {
-		usedFonts.clear();
-		final Font f;
-		try {
-			f = Font.createFont(Font.TRUETYPE_FONT, stream);
-			usedFonts.add(f);
-
-		}
-		catch (final Exception exception) {
-			usedFonts.add(new Font("Arial", Font.PLAIN, (int) size));
-			YExManager.pop(new YexIO("Couldn't load the font using default font instead"));
+			usedFonts.add(new Font("Roboto", Font.PLAIN, (int) size));
+			exception.printStackTrace();
 		}
 		fontSize = size;
 		antiAliasEnabled = antiAlias;
@@ -268,8 +248,7 @@ public class GlyphCache {
 	 *
 	 * @return the newly created GlyphVector
 	 */
-	GlyphVector layoutGlyphVector(final Font font, final char[] text, final int start,
-				final int limit, final int layoutFlags) {
+	GlyphVector layoutGlyphVector(final Font font, final char[] text, final int start, final int limit, final int layoutFlags) {
 		/* Ensure this font is already in fontCache so it can be referenced by cacheGlyphs() later on */
 		if (!fontCache.containsKey(font)) {
 			fontCache.put(font, fontCache.size());
@@ -300,7 +279,7 @@ public class GlyphCache {
 			/* Only use the font if it can layout at least the first character of the requested string range */
 			final Font font = iterator.next();
 			if (font.canDisplayUpTo(text, start, limit) != start) /* Return a font instance of the proper point size and style; usedFonts has only 1pt sized plain
-																					 * style fonts */
+			 * style fonts */
 				return font.deriveFont(style, fontSize);
 		}
 		/* If still not found, try searching through all fonts installed on the system for the first that
@@ -359,8 +338,7 @@ public class GlyphCache {
 	 */
 	// todo May need a blank border of pixels around everything for mip-map/tri-linear filtering with
 	// Optifine
-	void cacheGlyphs(final Font font, final char[] text, final int start, final int limit,
-				final int layoutFlags) {
+	void cacheGlyphs(final Font font, final char[] text, final int start, final int limit, final int layoutFlags) {
 		/* Create new GlyphVector so glyphs can be moved around (kerning workaround; see below) without
 		 * affecting caller */
 		final GlyphVector vector = layoutGlyphVector(font, text, start, limit, layoutFlags);
@@ -400,8 +378,7 @@ public class GlyphCache {
 				 * bearing (e.g. U+0423 Cyrillic uppercase letter U on Windows 7). */
 				vectorBounds = vector.getPixelBounds(fontRenderContext, 0, 0);
 				/* Enlage the stringImage if it is too small to store the entire rendered string */
-				if (vectorBounds.width > stringImage.getWidth()
-							|| vectorBounds.height > stringImage.getHeight()) {
+				if (vectorBounds.width > stringImage.getWidth() || vectorBounds.height > stringImage.getHeight()) {
 					final int width = Math.max(vectorBounds.width, stringImage.getWidth());
 					final int height = Math.max(vectorBounds.height, stringImage.getHeight());
 					allocateStringImage(width, height);
@@ -416,8 +393,7 @@ public class GlyphCache {
 			 * this method is positioned around the origin of each individual glyph." However, the actual bounds
 			 * are all relative to the start of the entire GlyphVector, which is actually more useful for
 			 * extracting the glyph's image from the rendered string. */
-			final Rectangle rect = vector.getGlyphPixelBounds(index, null, -vectorBounds.x,
-						-vectorBounds.y);
+			final Rectangle rect = vector.getGlyphPixelBounds(index, null, -vectorBounds.x, -vectorBounds.y);
 			/* If the current line in cache image is full, then advance to the next line */
 			if (cachePosX + rect.width + GLYPH_BORDER > TEXTURE_WIDTH) {
 				cachePosX = GLYPH_BORDER;
@@ -442,9 +418,7 @@ public class GlyphCache {
 			/* Blit the individual glyph from it's position in the temporary string buffer to its (cachePosX,
 			 * cachePosY) position in the texture. NOTE: We don't have to erase the area in the texture image
 			 * first because the composite method in the Graphics object is always set to AlphaComposite.Src. */
-			glyphCacheGraphics.drawImage(stringImage, cachePosX, cachePosY, cachePosX + rect.width,
-						cachePosY + rect.height, rect.x, rect.y, rect.x + rect.width,
-						rect.y + rect.height, null);
+			glyphCacheGraphics.drawImage(stringImage, cachePosX, cachePosY, cachePosX + rect.width, cachePosY + rect.height, rect.x, rect.y, rect.x + rect.width, rect.y + rect.height, null);
 			/* Store this glyph's position in texture and its origin offset. Note that "rect" will not be
 			 * modified after this point, and getGlyphPixelBounds() always returns a new Rectangle. */
 			rect.setLocation(cachePosX, cachePosY);
@@ -497,8 +471,7 @@ public class GlyphCache {
 			/* Load imageBuffer with pixel data ready for transfer to OpenGL texture */
 			updateImageBuffer(dirty.x, dirty.y, dirty.width, dirty.height);
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureName);
-			GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, dirty.x, dirty.y, dirty.width, dirty.height,
-						GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, imageBuffer);
+			GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, dirty.x, dirty.y, dirty.width, dirty.height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, imageBuffer);
 		}
 	}
 
@@ -525,20 +498,13 @@ public class GlyphCache {
 	 * from setDefaultFont() when changing current configuration.
 	 */
 	private void setRenderingHints() {
-		stringGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-					RenderingHints.VALUE_ANTIALIAS_ON);
-		stringGraphics.setRenderingHint(RenderingHints.KEY_RENDERING,
-					RenderingHints.VALUE_RENDER_QUALITY);
-		stringGraphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-					RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		stringGraphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-					RenderingHints.VALUE_STROKE_NORMALIZE);
-		stringGraphics.setRenderingHint(RenderingHints.KEY_DITHERING,
-					RenderingHints.VALUE_DITHER_DISABLE);
-		stringGraphics.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-					RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		stringGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-					RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+		stringGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		stringGraphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		stringGraphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		stringGraphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
+		stringGraphics.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+		stringGraphics.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		stringGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
 		stringGraphics.setRenderingHint(RenderingHints.KEY_TEXT_LCD_CONTRAST, 120);
 		//		stringGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAliasEnabled ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF);
 		//		stringGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, antiAliasEnabled ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
@@ -564,8 +530,7 @@ public class GlyphCache {
 		 * format may result in faster rendering since the GPU has to only fetch 1 byte per texel instead of
 		 * 4 with a regular RGBA texture. */
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureName);
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_ALPHA8, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0,
-					GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, imageBuffer);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_ALPHA8, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, imageBuffer);
 		/* Explicitely disable mipmap support becuase updateTexture() will only update the base level 0 */
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);

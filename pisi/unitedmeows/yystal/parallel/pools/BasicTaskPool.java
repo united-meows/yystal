@@ -1,63 +1,57 @@
 package pisi.unitedmeows.yystal.parallel.pools;
 
-import pisi.unitedmeows.yystal.*;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import pisi.unitedmeows.yystal.YSettings;
+import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.parallel.*;
 import pisi.unitedmeows.yystal.utils.kThread;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-public class BasicTaskPool implements ITaskPool
-{
+public class BasicTaskPool implements ITaskPool {
 	/* taskworkers that runs the tasks */
 	private List<TaskWorker> taskWorkers;
-
 	/* controller thread that controls worker */
 	private Thread controlThread;
-
 	/* maximum and the minimum number of workers in a pool */
-	private int minWorkers, maxWorkers;
-
+	private int minWorkers , maxWorkers;
 	/* tasks in the queue */
 	private ConcurrentLinkedQueue<Task> taskQueue;
-
-	private HashMap<Task, Long> waitingTasks = new HashMap<>();
+	private Map<Task, Long> waitingTasks;
 
 	public BasicTaskPool(int minWorkers, int maxWorkers) {
 		this.minWorkers = minWorkers;
 		this.maxWorkers = maxWorkers;
-		taskWorkers = new ArrayList<>();
-		waitingTasks  = new HashMap<>();
-		taskQueue = new ConcurrentLinkedQueue<Task>();
+		taskWorkers = new CopyOnWriteArrayList<>();
+		waitingTasks = new ConcurrentHashMap<>();
+		taskQueue = new ConcurrentLinkedQueue<>();
 	}
 
 	/* gets called when the client starts using this pool */
 	@Override
 	public void register() {
-		controlThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				control();
-			}
-		});
-
+		controlThread = new Thread(this::control);
 		for (int i = 0; i < minWorkers; i++) {
 			final TaskWorker taskWorker = new TaskWorker();
 			taskWorkers.add(taskWorker);
 			taskWorker.start();
 		}
-
 		controlThread.start();
 	}
 
 	/* gets called when client switches the pool for another pool */
 	@Override
 	public void unregister() {
-		for (TaskWorker taskWorker : taskWorkers) {
+		for (int i = 0; i < taskWorkers.size(); i++) {
+			TaskWorker taskWorker = taskWorkers.get(i);
 			taskWorker.stopWorker();
 		}
 		taskWorkers.clear();
-
 		/* maybe add unfinished tasks to new pool? */
 		taskQueue.clear();
 	}
@@ -65,22 +59,20 @@ public class BasicTaskPool implements ITaskPool
 	/* controller thread */
 	public void control() {
 		while (YYStal.mainThread().isAlive()) {
-
 			boolean allBusy = true;
-			for (TaskWorker taskWorker : taskWorkers) {
+			for (int i = 0; i < taskWorkers.size(); i++) {
+				TaskWorker taskWorker = taskWorkers.get(i);
 				if (!taskWorker.isBusy()) {
 					allBusy = false;
 					break;
 				}
 			}
-
 			/* if all workers are busy, adds new workers on the way */
 			if (allBusy && workerCount() < maxWorkers) {
 				final TaskWorker taskWorker = new TaskWorker();
 				taskWorkers.add(taskWorker);
 				taskWorker.start();
 			}
-
 			if (!waitingTasks.isEmpty()) {
 				try {
 					Iterator<Map.Entry<Task, Long>> waitingTasksIterator = waitingTasks.entrySet().iterator();
@@ -92,16 +84,14 @@ public class BasicTaskPool implements ITaskPool
 							waitingTasksIterator.remove();
 						}
 					}
-				} catch (ConcurrentModificationException e) {
+				}
+				catch (ConcurrentModificationException e) {
 					e.printStackTrace();
 				}
 			}
-
-
-
 			/* if a worker is free for some time removes the worker */
 			if (!allBusy && workerCount() > minWorkers) {
-				long time = System.currentTimeMillis() - 500  /* if worker is free more than 500ms */;
+				long time = System.currentTimeMillis() - 500 /* if worker is free more than 500ms */;
 				Iterator<TaskWorker> taskWorkerIterator = taskWorkers.iterator();
 				while (taskWorkerIterator.hasNext()) {
 					if (workerCount() > minWorkers) {
@@ -112,7 +102,6 @@ public class BasicTaskPool implements ITaskPool
 					}
 				}
 			}
-
 			/* waits  */
 			kThread.sleep(YYStal.setting(YSettings.TASKPOOL_CONTROL_CHECK_DELAY));
 		}
@@ -128,9 +117,7 @@ public class BasicTaskPool implements ITaskPool
 
 	@Override
 	public Task run_w(IFunction<?> function, Future<?> future, long after) {
-		if (after <= 0) {
-			return run(function, future);
-		}
+		if (after <= 0) return run(function, future);
 		final Task task = new Task(function, future);
 		waitingTasks.put(task, System.currentTimeMillis() + after);
 		return task;
@@ -142,8 +129,7 @@ public class BasicTaskPool implements ITaskPool
 		Iterator<TaskWorker> taskWorkerIterator = taskWorkers.iterator();
 		while (taskWorkerIterator.hasNext()) {
 			final TaskWorker taskWorker = taskWorkerIterator.next();
-			if (taskWorker == thread)
-				return taskWorker;
+			if (taskWorker == thread) return taskWorker;
 		}
 		return null;
 	}
@@ -153,12 +139,10 @@ public class BasicTaskPool implements ITaskPool
 		Iterator<TaskWorker> taskWorkerIterator = taskWorkers.iterator();
 		while (taskWorkerIterator.hasNext()) {
 			final TaskWorker taskWorker = taskWorkerIterator.next();
-			if (taskWorker.currentTask() == task)
-				return taskWorker;
+			if (taskWorker.currentTask() == task) return taskWorker;
 		}
 		return null;
 	}
-
 
 	@Override
 	public void stopWorker(TaskWorker worker, boolean abort) {
@@ -170,10 +154,11 @@ public class BasicTaskPool implements ITaskPool
 				break;
 			}
 		}
-		if (abort)
+		if (abort) {
 			worker.abortWorker();
-		else
+		} else {
 			worker.stopWorker();
+		}
 	}
 
 	@Override

@@ -26,9 +26,11 @@ public enum YTestStart {
 	private static final YLogger logger = YYStal.createLogger(YTestStart.class).setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
 
 	public static void main(final String[] args) {
-
+		logger.fatal("ez");
+		logger.info("ez");
+		logger.debug("ez");
 		if (true) {
-			new YWindow(":DDDDDDDD", 800, 800).open();
+
 			return;
 		}
 

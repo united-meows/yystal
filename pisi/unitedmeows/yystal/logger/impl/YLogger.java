@@ -22,19 +22,8 @@ public class YLogger implements ILogger {
 	private String[] buffer;
 	private boolean colored = false;
 	private int bufferIndex;
-	private static final Ansi.Color FATAL_COLOR;
-
-	static {
-		final String os = System.getProperty("os.name").toLowerCase();
-		boolean linux = (os.contains("nix") || os.contains("nux") || os.contains("aix"));
-		if (linux) {
-			FATAL_COLOR = Ansi.Color.MAGENTA;
-		} else {
-			FATAL_COLOR = Ansi.Color.RED;
-			/* todo: ghost check this (on linux MAGENTA makes RED background im not sure if it's same for windows)*/
-		}
-	}
-
+	private static final Ansi.Color FATAL_COLOR = Ansi.Color.RED;
+	
 	public YLogger(final Class<?> _clazz) {
 		clazz = _clazz;
 		name = "[" + clazz.getSimpleName().toUpperCase(Locale.ROOT) + "]";

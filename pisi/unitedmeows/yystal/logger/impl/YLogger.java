@@ -6,6 +6,7 @@ import pisi.unitedmeows.yystal.file.YFile;
 import pisi.unitedmeows.yystal.logger.ILogger;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -219,11 +220,27 @@ public class YLogger implements ILogger {
 	public YLogger setColored(boolean state) {
 		this.colored = state;
 		if (state) {
-			if (!AnsiConsole.isInstalled()) {
+
+			boolean installed = false;
+			try {
+				installed = AnsiConsole.isInstalled();
+			} catch (Exception ex3) {
+				try {
+					final Field installedField = AnsiConsole.class.getDeclaredField("installed");
+					installedField.setAccessible(true);
+					installed = ((int) installedField.get(null) > 0);
+				} catch (Exception ex) {
+
+				}
+			}
+
+
+			if (!installed) {
 				System.setProperty("jansi.passthrough", "true");
 				System.setProperty("org.jline.terminal.dumb", "true");
 				AnsiConsole.systemInstall();
 			}
+
 		}
 		return this;
 	}

@@ -5,6 +5,8 @@ import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.clazz.prop;
 import pisi.unitedmeows.yystal.utils.kThread;
 
+import java.util.function.Consumer;
+
 public class Async {
 
 	/* runs the function on taskpool without returning a value */
@@ -119,6 +121,8 @@ public class Async {
 		}
 		return future.result();
 	}
+
+
 
 
 	// runs the function on new thread and locks the current thread then returns the value

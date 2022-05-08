@@ -53,7 +53,6 @@ public enum YTestStart {
 		System.out.println("Sending random bytes took " + firstCheck + "ms");
 		startWatcher();
 		final int massConnectClientSize = 40;
-		Async.async(() -> "anan");
 		{
 			final YTcpServer server = new YTcpServer(IPAddress.LOOPBACK, 2173);
 			server.listen();

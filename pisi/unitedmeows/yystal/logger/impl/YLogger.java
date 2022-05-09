@@ -119,7 +119,7 @@ public class YLogger implements ILogger {
 			}
 			out.print(ansi().bg(FATAL_COLOR).fg(BLACK).a("[FATAL] "));
 			out.println(ansi().bg(FATAL_COLOR).fg(BLACK).a(text));
-			out.print(ansi().bgDefault());
+			out.print(ansi().bg(DEFAULT));
 			ansi().reset();
 		} else {
 			final StringBuilder stringBuilder = new StringBuilder();

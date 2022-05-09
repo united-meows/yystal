@@ -274,4 +274,29 @@ public class YLogger implements ILogger {
 		YEAR_MONTH_DAY_FULL,
 		NO_TIME
 	}
+
+	@Override
+	public void warn(String text, Object... args) {
+		warn(String.format(text, args));
+	}
+
+	@Override
+	public void info(String text, Object... args) {
+		info(String.format(text, args));
+	}
+
+	@Override
+	public void print(String text, Object... args) {
+		print(String.format(text, args));
+	}
+
+	@Override
+	public void fatal(String text, Object... args) {
+		fatal(String.format(text, args));
+	}
+
+	@Override
+	public void debug(String text, Object... args) {
+		debug(String.format(text, args));
+	}
 }

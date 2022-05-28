@@ -1,10 +1,5 @@
 package pisi.unitedmeows.yystal.sql;
 
-
-import pisi.unitedmeows.yystal.YYStal;
-import pisi.unitedmeows.yystal.logger.impl.YLogger;
-import pisi.unitedmeows.yystal.parallel.IState;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,23 +7,19 @@ import java.util.List;
 import java.util.Map;
 
 public class YDatabaseClient {
-
 	private boolean connected;
 	private Connection connection;
 	private final java.lang.Object actionLock = new java.lang.Object();
 
-
 	public YDatabaseClient(String username, String password, String database, String host, int port) {
 		try {
-			synchronized(this) {
-				if (connection != null && !connection.isClosed()) {
-					return;
-				}
-
+			synchronized (this) {
+				if (connection != null && !connection.isClosed()) return;
 				connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?characterEncoding=latin1&useConfigs=maxPerformance", username, password);
 				connected = true;
 			}
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			connected = false;
 		}
 	}
@@ -46,7 +37,9 @@ public class YDatabaseClient {
 		try {
 			command = connection.prepareStatement(sql);
 			return command.execute();
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
 			return false;
 		}
 	}
@@ -60,7 +53,7 @@ public class YDatabaseClient {
 	}
 
 	public List<List<Object>> select(String sql) {
-		synchronized(actionLock) {
+		synchronized (actionLock) {
 			try {
 				PreparedStatement command = connection.prepareStatement(sql);
 				ResultSet resultSet = command.executeQuery();
@@ -74,14 +67,16 @@ public class YDatabaseClient {
 					list.add(dataList);
 				}
 				return list;
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
 				return new ArrayList<>();
 			}
 		}
 	}
 
 	public List<Map<String, Object>> select(String sql, String... columnNames) {
-		synchronized(actionLock) {
+		synchronized (actionLock) {
 			try {
 				PreparedStatement command = connection.prepareStatement(sql);
 				ResultSet resultSet = command.executeQuery();
@@ -94,7 +89,9 @@ public class YDatabaseClient {
 					list.add(dataMap);
 				}
 				return list;
-			} catch (SQLException e) {
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
 				return new ArrayList<>();
 			}
 		}
@@ -107,9 +104,8 @@ public class YDatabaseClient {
 	public Connection connection() {
 		return connection;
 	}
-
 	/*	public boolean insertMulti(String tableName, List<List<Object>> dataList, String... columns) {
 		String sql = "INSERT INTO " + tableName + "(" + String.join(",", columns) + " VALUES ";
-
+	
 	}*/
 }

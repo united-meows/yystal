@@ -1,11 +1,13 @@
-package pisi.unitedmeows.yystal.yap;
+package pisi.unitedmeows.yystal.networking.server.yap;
 
 import pisi.unitedmeows.yystal.clazz.event;
 import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.client.YTcpClient;
 import pisi.unitedmeows.yystal.networking.events.CDataReceivedEvent;
+import pisi.unitedmeows.yystal.networking.server.pack.YSignal;
+import pisi.unitedmeows.yystal.networking.server.pack.YSignalBuilder;
 import pisi.unitedmeows.yystal.utils.MemoryReader;
-import pisi.unitedmeows.yystal.yap.events.YCSignalReceived;
+import pisi.unitedmeows.yystal.networking.server.yap.events.YCSignalReceived;
 
 import java.io.IOException;
 
@@ -20,7 +22,7 @@ public class YapClient {
 			@Override
 			public void onDataReceived(byte[] data) {
 				try (MemoryReader memoryReader = new MemoryReader(data)){
-					signalReceivedEvent.fire(new YapSignal(memoryReader));
+					signalReceivedEvent.fire(new YSignal(memoryReader));
 				} catch (IOException ex) {}
 			}
 		});
@@ -35,15 +37,15 @@ public class YapClient {
 		return tcpClient;
 	}
 
-	public YapSignalBuilder newSignal() {
-		return YapSignalBuilder.builder();
+	public YSignalBuilder newSignal() {
+		return YSignalBuilder.builder();
 	}
 
-	public void send(YapSignal signal) {
+	public void send(YSignal signal) {
 		tcpClient.send(signal.reader().getBytes());
 	}
 
-	public void send(YapSignalBuilder builder) {
+	public void send(YSignalBuilder builder) {
 		tcpClient.send(builder.buildBytes());
 	}
 

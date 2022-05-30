@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
 import org.fusesource.jansi.Ansi;
+import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
 
 import pisi.unitedmeows.yystal.file.YFile;
@@ -58,52 +59,42 @@ public class YLogger implements ILogger {
 		bufferIndex = 0;
 	}
 
-	@Override
-	public void info(String text) {
+	private void internalPrint(String text, String prefix_, Color textColor, boolean special) {
+		String value = String.format("[%s] ", prefix_);
 		if (colored) {
-			out.print(ansi().eraseScreen().fg(CYAN).a("[").a(generateTime()).a("] "));
+			out.print(ansi().eraseScreen().fg(CYAN).bold().a("[").a(generateTime()).a("] "));
 			if (prefix) {
 				out.print(name);
 				out.print(" ");
 			}
-			out.print(ansi().fg(GREEN).a("[INFO] "));
-			out.println(ansi().fg(GREEN).a(text));
-			ansi().reset();
+			if (special) {
+				out.print(ansi().bg(FATAL_COLOR).fg(textColor).a(value));
+				out.println(ansi().bg(FATAL_COLOR).fg(textColor).a(text).reset());
+			} else {
+				out.print(ansi().fg(textColor).a(value));
+				out.println(ansi().fg(textColor).a(text).reset());
+			}
 		} else {
 			final StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.append("[").append(generateTime()).append("] ");
 			if (prefix) {
 				stringBuilder.append(name).append(" ");
 			}
-			stringBuilder.append("[INFO] ");
+			stringBuilder.append(value);
 			stringBuilder.append(text);
 			out.println(stringBuilder.toString());
 		}
-		post("[INFO] " + text);
+		post(value + text);
+	}
+
+	@Override
+	public void info(String text) {
+		internalPrint(text, "INFO", GREEN, false);
 	}
 
 	@Override
 	public void warn(String text) {
-		if (colored) {
-			out.print(ansi().eraseScreen().fg(CYAN).a("[").a(generateTime()).a("] "));
-			if (prefix) {
-				out.print(name);
-				out.print(" ");
-			}
-			out.print(ansi().fg(YELLOW).a("[WARN] "));
-			out.println(ansi().fg(YELLOW).a(text));
-			ansi().reset();
-		} else {
-			final StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.append("[").append(generateTime()).append("] ");
-			if (prefix) {
-				stringBuilder.append(name).append(" ");
-			}
-			stringBuilder.append("[WARN] ");
-			stringBuilder.append(text);
-			out.println(stringBuilder);
-		}
-		post("[WARN] " + text);
+		internalPrint(text, "WARN", YELLOW, false);
 	}
 
 	@Override
@@ -111,56 +102,18 @@ public class YLogger implements ILogger {
 
 	@Override
 	public void fatal(String text) {
-		if (colored) {
-			out.print(ansi().eraseScreen().fg(CYAN).bold().a("[").a(generateTime()).a("] "));
-			if (prefix) {
-				out.print(name);
-				out.print(" ");
-			}
-			out.print(ansi().bg(FATAL_COLOR).fg(BLACK).a("[FATAL] "));
-			out.println(ansi().bg(FATAL_COLOR).fg(BLACK).a(text));
-			out.print(ansi().bg(DEFAULT));
-			ansi().reset();
-		} else {
-			final StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.append("[").append(generateTime()).append("] ");
-			if (prefix) {
-				stringBuilder.append(name).append(" ");
-			}
-			stringBuilder.append("[FATAL] ");
-			stringBuilder.append(text);
-			out.println(stringBuilder.toString());
-		}
-		post("[FATAL] " + text);
+		internalPrint(text, "FATAL", BLACK, true);
 	}
 
 	@Override
 	public void debug(String text) {
-		if (colored) {
-			out.print(ansi().eraseScreen().fg(CYAN).a("[").a(generateTime()).a("] "));
-			if (prefix) {
-				out.print(name);
-				out.print(" ");
-			}
-			out.print(ansi().fg(YELLOW).a("[DEBUG] "));
-			out.println(ansi().fg(YELLOW).a(text));
-			ansi().reset();
-		} else {
-			final StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.append("[").append(generateTime()).append("] ");
-			if (prefix) {
-				stringBuilder.append(name).append(" ");
-			}
-			stringBuilder.append("[DEBUG] ");
-			stringBuilder.append(text);
-			out.println(stringBuilder.toString());
-		}
-		post("[DEBUG] " + text);
+		internalPrint(text, "DEBUG", MAGENTA, false);
 	}
 
 	@Override
 	public void log(Enum<?> type, String text) {
 		/* do nothing */
+		// que pro
 	}
 
 	public Time time() {

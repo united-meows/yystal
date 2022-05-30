@@ -1,4 +1,4 @@
-package pisi.unitedmeows.yystal.networking.server.yap.events;
+package pisi.unitedmeows.yystal.networking.server.pack.events;
 
 import pisi.unitedmeows.yystal.clazz.delegate;
 import pisi.unitedmeows.yystal.networking.server.pack.YSignal;

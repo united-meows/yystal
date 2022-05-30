@@ -1,4 +1,4 @@
-package pisi.unitedmeows.yystal.yap;
+package pisi.unitedmeows.yystal.networking.server.yap;
 
 import java.nio.charset.StandardCharsets;
 

@@ -12,7 +12,7 @@ public class YSQLCommand extends HookClass<String> {
 	}
 
 	public YSQLCommand putString(String data) {
-		putRaw("'" + data + "'");
+		putRaw(String.format("'%s'", data));
 		return this;
 	}
 

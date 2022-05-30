@@ -1,13 +1,11 @@
 package test.yystal;
 
-import static pisi.unitedmeows.yystal.YYStal.startWatcher;
-import static pisi.unitedmeows.yystal.YYStal.stopWatcher;
-
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import org.fusesource.jansi.AnsiConsole;
 import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.exception.YTry;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.client.YTcpClient;
@@ -16,21 +14,41 @@ import pisi.unitedmeows.yystal.networking.events.SDataReceivedEvent;
 import pisi.unitedmeows.yystal.networking.server.YSocketClient;
 import pisi.unitedmeows.yystal.networking.server.YTcpPool;
 import pisi.unitedmeows.yystal.networking.server.YTcpServer;
+import pisi.unitedmeows.yystal.networking.server.pack.YPackClient;
+import pisi.unitedmeows.yystal.networking.server.pack.YPackServer;
+import pisi.unitedmeows.yystal.networking.server.pack.YSignal;
+import pisi.unitedmeows.yystal.networking.server.pack.events.YSSignalReceived;
+import pisi.unitedmeows.yystal.networking.server.yap.YAppServer;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.ui.YWindow;
+import pisi.unitedmeows.yystal.utils.CoID;
 import pisi.unitedmeows.yystal.utils.YRandom;
 import pisi.unitedmeows.yystal.utils.kThread;
+import pisi.unitedmeows.yystal.utils.list.YCache;
+
+import static pisi.unitedmeows.yystal.YYStal.*;
 
 public enum YTestStart {
 	gaming; /* :D */
-	private static final YLogger logger = YYStal.createLogger(YTestStart.class).setTime(YLogger.Time.DAY_MONTH_YEAR_FULL).setColored(true);
+	private static final YLogger logger = YYStal.createLogger(YTestStart.class)
+			.time(YLogger.Time.DAY_MONTH_YEAR_FULL)
+			.colored(true);
 
 	public static void main(final String[] args) {
-		logger.fatal("ez");
-		logger.info("ez");
-		logger.debug("ez");
-		if (true) {
 
+        YCache<String, Integer> cache = new YCache<>(2000);
+        cache.put("slowcheet4h", 2173);
+        kThread.sleep(1000);
+        cache.put("ghost", 2000);
+        System.out.println(cache.size());
+        System.out.println("erik: " + cache.get("erik"));
+        System.out.println("ghost: " + cache.get("ghost"));
+        kThread.sleep(1500);
+        System.out.println(cache.size());
+        System.out.println("ghost: " + cache.get("ghost"));
+		kThread.sleep(1000);
+
+		if (true) {
 			return;
 		}
 

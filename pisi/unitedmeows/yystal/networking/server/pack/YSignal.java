@@ -2,12 +2,16 @@ package pisi.unitedmeows.yystal.networking.server.pack;
 
 import pisi.unitedmeows.yystal.clazz.HookClass;
 import pisi.unitedmeows.yystal.utils.MemoryReader;
+import pisi.unitedmeows.yystal.utils.MemoryWriter;
 
-public class YapSignal extends HookClass<MemoryReader> {
+public class YSignal extends HookClass<MemoryReader> {
 
-	public YapSignal() {}
+	protected YSignal() {}
+	public static YSignalBuilder newSignal() { return YSignalBuilder.builder(); }
+	public static YSignalBuilder newSignal(MemoryReader memoryReader) { return YSignalBuilder.builder(memoryReader); }
+	public static YSignalBuilder newSignal(MemoryWriter memoryWriter) { return YSignalBuilder.builder(memoryWriter); }
 
-	public YapSignal(MemoryReader memoryReader) {
+	public YSignal(MemoryReader memoryReader) {
 		hooked = memoryReader;
 	}
 

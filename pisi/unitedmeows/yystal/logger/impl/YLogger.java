@@ -163,6 +163,15 @@ public class YLogger implements ILogger {
 		/* do nothing */
 	}
 
+	public Time time() {
+		return time;
+	}
+
+	public YLogger time(Time _time) {
+		time = _time;
+		return this;
+	}
+
 	private String generateTime() {
 		switch (time) {
 		case MILLISECONDS:
@@ -193,12 +202,8 @@ public class YLogger implements ILogger {
 		}
 	}
 
-	public YLogger setTime(Time time) {
-		this.time = time;
-		return this;
-	}
 
-	public YLogger setColored(boolean state) {
+	public YLogger colored(boolean state) {
 		this.colored = state;
 		if (state) {
 			boolean installed = false;
@@ -250,7 +255,7 @@ public class YLogger implements ILogger {
 		return this;
 	}
 
-	public YLogger setBufferSize(int bufferSize) {
+	public YLogger bufferSize(int bufferSize) {
 		this.bufferSize = bufferSize;
 		if (buffer != null) {
 			flush();
@@ -259,7 +264,7 @@ public class YLogger implements ILogger {
 		return this;
 	}
 
-	public YLogger setPrefix(String value) {
+	public YLogger prefix(String value) {
 		this.prefix = true;
 		name = "[" + value + "]";
 		return this;

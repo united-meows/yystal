@@ -1,22 +1,20 @@
-package pisi.unitedmeows.yystal.networking.server.yap;
+package pisi.unitedmeows.yystal.networking.server.pack;
 
 import pisi.unitedmeows.yystal.clazz.event;
 import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.client.YTcpClient;
 import pisi.unitedmeows.yystal.networking.events.CDataReceivedEvent;
-import pisi.unitedmeows.yystal.networking.server.pack.YSignal;
-import pisi.unitedmeows.yystal.networking.server.pack.YSignalBuilder;
+import pisi.unitedmeows.yystal.networking.server.pack.events.YCSignalReceived;
 import pisi.unitedmeows.yystal.utils.MemoryReader;
-import pisi.unitedmeows.yystal.networking.server.yap.events.YCSignalReceived;
 
 import java.io.IOException;
 
-public class YapClient {
+public class YPackClient {
 
 	private YTcpClient tcpClient;
 	public event<YCSignalReceived> signalReceivedEvent = new event<>();
 
-	public YapClient(YTcpClient client) {
+	public YPackClient(YTcpClient client) {
 		tcpClient = client;
 		tcpClient.dataReceivedEvent.bind(new CDataReceivedEvent() {
 			@Override
@@ -27,7 +25,7 @@ public class YapClient {
 			}
 		});
 	}
- 
+
 	public void connect(IPAddress address, int port) {
 		tcpClient.connect(address, port);
 	}
@@ -49,7 +47,7 @@ public class YapClient {
 		tcpClient.send(builder.buildBytes());
 	}
 
-	public YapClient() {
+	public YPackClient() {
 		this(new YTcpClient().makeFixed());
 	}
 

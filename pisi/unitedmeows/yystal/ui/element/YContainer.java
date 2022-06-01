@@ -11,7 +11,6 @@ public abstract class YContainer extends YElement {
 
 	protected Vertex2f location;
 	protected YOrigin origin;
-	protected Vector2f size;
 	private final List<YElement> elements;
 
 
@@ -27,9 +26,6 @@ public abstract class YContainer extends YElement {
 		return origin;
 	}
 
-	public Vector2f size() {
-		return size;
-	}
 
 	public Vertex2f location() {
 		return location;
@@ -43,7 +39,4 @@ public abstract class YContainer extends YElement {
 		this.origin = origin;
 	}
 
-	public void setSize(Vector2f size) {
-		this.size = size;
-	}
 }

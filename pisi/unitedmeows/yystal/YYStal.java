@@ -4,20 +4,28 @@ import pisi.unitedmeows.yystal.clazz.function;
 import pisi.unitedmeows.yystal.clazz.out;
 import pisi.unitedmeows.yystal.clazz.ref;
 import pisi.unitedmeows.yystal.clazz.valuelock;
+import pisi.unitedmeows.yystal.exception.YBasicTry;
 import pisi.unitedmeows.yystal.exception.YEx;
 import pisi.unitedmeows.yystal.exception.YExManager;
+import pisi.unitedmeows.yystal.exception.YExceptionRunnable;
+import pisi.unitedmeows.yystal.exception.impl.YexIO;
 import pisi.unitedmeows.yystal.hook.YString;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 import pisi.unitedmeows.yystal.parallel.ITaskPool;
 import pisi.unitedmeows.yystal.parallel.pools.BasicTaskPool;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.ui.YWindow;
+import pisi.unitedmeows.yystal.utils.IDisposable;
 import pisi.unitedmeows.yystal.utils.Pair;
 import pisi.unitedmeows.yystal.utils.Stopwatch;
 import pisi.unitedmeows.yystal.utils.Types;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class YYStal {
 
@@ -120,6 +128,26 @@ public class YYStal {
         startWatcher();
         runnable.run();
         return stopWatcher();
+    }
+
+    public static YBasicTry basicTry(YExceptionRunnable _runnable) {
+        return  new YBasicTry(_runnable);
+    }
+
+    public static <X extends IDisposable> void  using(X element, Consumer<X> consumer) {
+        consumer.accept(element);
+        element.close();
+    }
+    public static <X extends Closeable> boolean using(X element, Consumer<X> consumer) {
+        consumer.accept(element);
+        try {
+            element.close();
+        } catch (IOException e) {
+            YExManager.pop(new YexIO("Couldn't close the closeable %s", element));
+            return false;
+        }
+
+        return true;
     }
 
     public static YLogger createLogger(Class<?> clazz) {

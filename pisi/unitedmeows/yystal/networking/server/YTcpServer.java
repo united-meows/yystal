@@ -11,6 +11,7 @@ import pisi.unitedmeows.yystal.networking.events.SDataReceivedEvent;
 import pisi.unitedmeows.yystal.networking.server.extension.STcpExtension;
 import pisi.unitedmeows.yystal.networking.server.extension.impl.STcpFixedSize;
 import pisi.unitedmeows.yystal.networking.server.extension.impl.STcpLineRead;
+import pisi.unitedmeows.yystal.utils.IDisposable;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class YTcpServer {
+public class YTcpServer implements IDisposable {
 
 	/* listening ip address */
 	private IPAddress listening;
@@ -93,13 +94,20 @@ public class YTcpServer {
 		}
 	}
 
+    @Override
 	public void close() {
 		try {
 			kickAll();
 			connectedClients.clear();
 			serverSocket.close();
-		} catch(IOException e) {
 
+            dataReceiveEvent = null;
+            connectionReceivedEvent = null;
+            listening = null;
+            extensions.clear();
+            extensions = null;
+		} catch(IOException e) {
+            YExManager.pop(new YexIO("Received an error while closing the server binded on %s -> %s", port, e.getMessage()));
 		}
 	}
 

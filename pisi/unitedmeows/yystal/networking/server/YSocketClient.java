@@ -6,6 +6,7 @@ import pisi.unitedmeows.yystal.clazz.ref;
 import pisi.unitedmeows.yystal.exception.YExManager;
 import pisi.unitedmeows.yystal.exception.impl.YexIO;
 import pisi.unitedmeows.yystal.networking.server.extension.STcpExtension;
+import pisi.unitedmeows.yystal.utils.IDisposable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,7 +15,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.Iterator;
 
-public class YSocketClient {
+public class YSocketClient implements IDisposable {
 
 	private static byte[] BUFFER = new byte[4096 * 2];
 	private final Socket socket;

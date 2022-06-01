@@ -4,8 +4,11 @@ import java.util.function.Consumer;
 
 public class YTry {
 
-    public static YBasicTry create(YExceptionRunnable _runnable) {
-        final YBasicTry basicTry = new YBasicTry(_runnable);
-        return basicTry;
+    public static YBasicTry basicTry(YExceptionRunnable _runnable) {
+        return  new YBasicTry(_runnable);
+    }
+
+    public static YexTry create(Runnable _runnable) {
+        return new YexTry(_runnable);
     }
 }

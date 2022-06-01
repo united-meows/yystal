@@ -12,6 +12,10 @@ public class YExManager {
 		return (X) lastExceptionMap.getOrDefault(Thread.currentThread(), null);
 	}
 
+    public static void startCaching() {
+        lastExceptionMap.remove(Thread.currentThread());
+    }
+
 	public static void pop(YEx ex) {
 		lastExceptionMap.put(Thread.currentThread(), ex);
 	}

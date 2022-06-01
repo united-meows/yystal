@@ -1,15 +1,19 @@
 package pisi.unitedmeows.yystal.sql;
 
+import pisi.unitedmeows.yystal.utils.IDisposable;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class YDatabaseClient {
+public class YDatabaseClient implements IDisposable {
+
 	private boolean connected;
 	private Connection connection;
 	private final java.lang.Object actionLock = new java.lang.Object();
+    private HashMap<String, List<String>> tableColumnsCache;
 
 	public YDatabaseClient(String username, String password, String database, String host, int port) {
 		try {
@@ -18,6 +22,7 @@ public class YDatabaseClient {
 				connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?characterEncoding=latin1&useConfigs=maxPerformance", username, password);
 				connected = true;
 			}
+            tableColumnsCache = new HashMap<>();
 		}
 		catch (Exception ex) {
 			connected = false;
@@ -51,6 +56,38 @@ public class YDatabaseClient {
 	public List<Map<String, Object>> select(YSQLCommand sql, String... columnNames) {
 		return select(sql.getHooked(), columnNames);
 	}
+
+    public List<String> dbColumnsNoCache(String table) {
+        synchronized (actionLock) {
+            List<Map<String, Object>> select = select(
+                    new YSQLCommand(
+                            "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=^").putString(table),
+                    "TABLE_CATALOG",
+                    "TABLE_SCHEMA",
+                    "TABLE_NAME",
+                    "COLUMN_NAME"
+            );
+
+            List<String> columns = new ArrayList<>();
+
+            for (int i = 0; i < select.size(); i++) {
+                columns.add((String) select.get(i).get("COLUMN_NAME"));
+            }
+
+            return columns;
+        }
+    }
+
+    public List<String> dbColumns(String table) {
+        List<String> columns = tableColumnsCache.getOrDefault(table, null);
+
+        if (columns == null) {
+            tableColumnsCache.put(table, dbColumnsNoCache(table));
+            return columns;
+        }
+
+        return tableColumnsCache.get(table);
+    }
 
 	public List<List<Object>> select(String sql) {
 		synchronized (actionLock) {
@@ -104,6 +141,16 @@ public class YDatabaseClient {
 	public Connection connection() {
 		return connection;
 	}
+
+    @Override
+    public void close() {
+        try {
+            connection.close();
+        } catch (Exception ex) {}
+        connected = false;
+        tableColumnsCache.clear();
+    }
+
 	/*	public boolean insertMulti(String tableName, List<List<Object>> dataList, String... columns) {
 		String sql = "INSERT INTO " + tableName + "(" + String.join(",", columns) + " VALUES ";
 	

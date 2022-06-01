@@ -12,6 +12,7 @@ import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.client.extension.CTcpExtension;
 import pisi.unitedmeows.yystal.networking.client.extension.impl.CTcpFixedSize;
 import pisi.unitedmeows.yystal.networking.events.CDataReceivedEvent;
+import pisi.unitedmeows.yystal.utils.IDisposable;
 import pisi.unitedmeows.yystal.utils.kThread;
 
 import java.io.*;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class YTcpClient {
+public class YTcpClient implements IDisposable {
 
 	/* receives the data the server has sent */
 	protected Thread receiveThread;
@@ -157,6 +158,7 @@ public class YTcpClient {
 		_sendQueue.add(data);
 	}
 
+    @Override
 	public void close() {
 		if (socket != null && socket.isConnected()) {
 			ref<Boolean> canceled = YYStal.reference(false);
@@ -168,6 +170,12 @@ public class YTcpClient {
 				_close();
 			}
 		}
+        _sendQueue.clear();
+        inputStream = null;
+        outputStream = null;
+        connectedAddress = null;
+        BUFFER = null;
+        dataReceivedEvent = null;
 	}
 
 	public byte[] readNext() {

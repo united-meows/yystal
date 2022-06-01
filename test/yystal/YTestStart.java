@@ -1,17 +1,22 @@
 package test.yystal;
-import java.io.File;
 
+import java.awt.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import pisi.unitedmeows.yystal.YYStal;
-import pisi.unitedmeows.yystal.exception.YTry;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 import pisi.unitedmeows.yystal.networking.IPAddress;
 import pisi.unitedmeows.yystal.networking.client.YTcpClient;
 import pisi.unitedmeows.yystal.networking.server.YTcpServer;
+import pisi.unitedmeows.yystal.ui.YWindow;
+import pisi.unitedmeows.yystal.ui.element.YLabel;
+import pisi.unitedmeows.yystal.ui.element.simple.YBackgroundColor;
+import pisi.unitedmeows.yystal.ui.element.simple.YBackgroundImage;
 import pisi.unitedmeows.yystal.utils.YRandom;
 import pisi.unitedmeows.yystal.utils.kThread;
-import pisi.unitedmeows.yystal.utils.list.YCache;
+
+import javax.imageio.ImageIO;
 
 import static pisi.unitedmeows.yystal.YYStal.*;
 
@@ -21,25 +26,24 @@ public enum YTestStart {
 			.time(YLogger.Time.DAY_MONTH_YEAR_FULL)
 			.colored(true);
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws Exception {
 
-        YCache<String, Integer> cache = new YCache<>(2000);
-        cache.put("slowcheet4h", 2173);
-        kThread.sleep(1000);
-        cache.put("ghost", 2000);
-        System.out.println(cache.size());
-        System.out.println("erik: " + cache.get("erik"));
-        System.out.println("ghost: " + cache.get("ghost"));
-        kThread.sleep(1500);
-        System.out.println(cache.size());
-        System.out.println("ghost: " + cache.get("ghost"));
-		kThread.sleep(1000);
+        YWindow ywindow = new YWindow("yystal", 640, 480);
+        ywindow.open();
 
-		if (true) {
-			return;
-		}
+        ywindow.background.set(() -> new YBackgroundColor(Color.WHITE));
 
-		System.out.println("Starting..");
+        YLabel yLabel = new YLabel();
+        yLabel.text.set("Hello world");
+        ywindow.addElement(yLabel);
+
+
+
+        kThread.sleep(1000000);
+        if (true) {
+            return;
+        }
+        System.out.println("Starting..");
 		System.out.println("=============================");
 		int i = 100;
 		long firstCheck;

@@ -1,18 +1,27 @@
 package pisi.unitedmeows.yystal.ui.element;
 
+import javafx.scene.layout.Background;
+import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.clazz.event;
+import pisi.unitedmeows.yystal.clazz.prop;
+import pisi.unitedmeows.yystal.ui.element.simple.YBackgroundColor;
+import pisi.unitedmeows.yystal.ui.events.MouseEvent;
+import pisi.unitedmeows.yystal.ui.utils.RenderMethods;
 import pisi.unitedmeows.yystal.ui.utils.Vertex2f;
 import pisi.unitedmeows.yystal.ui.utils.YOrigin;
+import pisi.unitedmeows.yystal.ui.utils.yuiprop;
 import pisi.unitedmeows.yystal.utils.Vector2f;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
-public abstract class YContainer extends YElement {
+public class YContainer extends YElement {
 
-	protected Vertex2f location;
 	protected YOrigin origin;
 	private final List<YElement> elements;
-
+    public prop<IBackground> background = new prop<>(new YBackgroundColor(Color.WHITE));
 
 	public YContainer(Vertex2f _location, Vector2f _size, YOrigin _origin) {
 		location = _location;
@@ -21,17 +30,59 @@ public abstract class YContainer extends YElement {
 		elements = new ArrayList<>();
 	}
 
+    public YContainer(Vertex2f _location, Vector2f _size) {
+        this(_location, _size, YOrigin.TOP_LEFT);
+    }
 
-	public YOrigin origin() {
+    @Override
+    public void draw() {
+        background.get().draw();
+        for (YElement element : elements) {
+            if (element.isShown()) {
+                element.draw();
+            }
+        }
+    }
+
+    @Override
+    public boolean isMouseOver(float mouseX, float mouseY) {
+        return false;
+    }
+
+
+    @Override
+    public void setup() {
+
+        if (background.get() instanceof YElement) {
+            ((YElement) background.get()).container(this);
+        }
+
+        super.setup();
+    }
+
+    public YOrigin origin() {
 		return origin;
 	}
 
+    public void addElement(YElement element) {
+        element.container(this);
+        element.setup();
+        elements.add(element);
+
+        //todo: maybe this sort should be in reverse?
+        elements.sort(Comparator.comparingInt(o -> o.zLevel.get()));
+        element.show();
+    }
 
 	public Vertex2f location() {
 		return location;
 	}
 
-	public void setLocation(Vertex2f location) {
+    public List<YElement> elements() {
+        return elements;
+    }
+
+    public void setLocation(Vertex2f location) {
 		this.location = location;
 	}
 

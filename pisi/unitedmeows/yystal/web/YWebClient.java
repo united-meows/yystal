@@ -198,7 +198,8 @@ public class YWebClient {
 		}
 	}
 
-	public String postRequest(String url, String value, String contentType) {
+	public String
+    postRequest(String url, String value, String contentType) {
 		try {
 			return postRequest(new URL(url), value, contentType);
 		} catch (MalformedURLException e) {

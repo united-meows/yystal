@@ -103,4 +103,32 @@ public class TTFRenderer {
 		GL11.glPopMatrix();
 		return (float) x;
 	}
+
+
+    public float height(String text) {
+        if (text == null || text.isEmpty()) return 0;
+        float scale = GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX);
+        final StringCache.Entry entry = caches.get(scale).cacheString(text);
+        float biggestDif = -1.0F;
+        for (int glyphIndex = 0; glyphIndex < entry.glyphs.length; glyphIndex++) {
+            final GlyphCache.Glyph glyph = entry.glyphs[glyphIndex];
+            final GlyphCache.Entry entry2 = glyph.texture;
+            final float height = entry2.height;
+            if (height > biggestDif) {
+                biggestDif = height;
+            }
+        }
+        return biggestDif * defaultSize;
+    }
+
+    public float width(String text) {
+        if (text == null) return 0F;
+        text = text.replace("\u0000", "null_char");
+        float scale = GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX);
+        float calculate = increment * (Math.round((defaultSize * scale) / increment));
+        StringCache current = caches.getOrDefault(calculate, defaultCache);
+        final Entry entry = current.cacheString(text);
+        final double antiAlias = scale * 2D;
+        return (float) entry.advance;
+    }
 }

@@ -1,6 +1,8 @@
 package pisi.unitedmeows.yystal.ui.element;
 
+import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.clazz.prop;
+import pisi.unitedmeows.yystal.ui.YWindow;
 import pisi.unitedmeows.yystal.ui.font.TTFRenderer;
 import pisi.unitedmeows.yystal.utils.Vector4;
 
@@ -32,18 +34,14 @@ public class YLabel extends YElement {
 
     @Override
     public void draw() {
-        if (show) {
-            ttfRenderer.drawString(text.get(), location().x, location().y, color.get().getRGB(), false);
-        }
-    }
-
-    @Override
-    public boolean isMouseOver(float mouseX, float mouseY) {
-        return false;
+        int color2 = isMouseOver.get() ? 0xffff0000 : color.get().getRGB();
+        ttfRenderer.drawString(text.get(), location().x, location().y, color2, false);
+        size.setX(ttfRenderer.width(text.get()));
+        size.setY(ttfRenderer.height(text.get()));
     }
 
     public void font(String name) {
-        final Vector4<Float, Float, Float, Float> vector = new Vector4<>(1F, 200F, 1F, 30F);
+        final Vector4<Float, Float, Float, Float> vector = new Vector4<>(1F, 31F, 1F, 30F);
         ttfRenderer = new TTFRenderer(name, vector, true);
 
     }

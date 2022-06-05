@@ -11,9 +11,10 @@ import java.awt.image.BufferedImage;
 public class YBackgroundImage extends YElement {
 
     private int textureId = -1;
+    private Object texture;
 
     public YBackgroundImage(BufferedImage image) {
-        textureId = YUI.loadTexture(image).textureId();
+        texture = image;
     }
 
     public YBackgroundImage(YTexture _texture) {
@@ -22,6 +23,13 @@ public class YBackgroundImage extends YElement {
 
     public YBackgroundImage(String textureName) {
         textureId = YUI.texture(textureName).textureId();
+    }
+
+    @Override
+    public void setup() {
+        if (texture instanceof BufferedImage) {
+            textureId = YUI.loadTexture((BufferedImage) texture).textureId();
+        }
     }
 
     @Override

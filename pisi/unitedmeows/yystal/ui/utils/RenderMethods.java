@@ -34,6 +34,7 @@ public class RenderMethods {
     }
 
     public static void drawImage(int textureId, float x, float y, float width, float height) {
+        glPushMatrix();
         glColor4f(1, 1, 1, 1);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, textureId);
@@ -49,6 +50,8 @@ public class RenderMethods {
         glVertex2f(0, height);
         glEnd();
         glLoadIdentity();
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
     }
 
 

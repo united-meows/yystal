@@ -1,6 +1,7 @@
 package pisi.unitedmeows.yystal.ui.texture;
 
 import org.lwjgl.opengl.GL11;
+import pisi.unitedmeows.yystal.ui.YUI;
 import pisi.unitedmeows.yystal.ui.utils.RenderMethods;
 import pisi.unitedmeows.yystal.utils.IDisposable;
 
@@ -19,6 +20,7 @@ public class YTexture implements IDisposable {
     @Override
     public void close() {
         /* unload */
+        YUI.freeTexture(textureId());
         loaded = false;
     }
 

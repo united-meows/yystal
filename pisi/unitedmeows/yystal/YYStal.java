@@ -14,6 +14,7 @@ import pisi.unitedmeows.yystal.logger.impl.YLogger;
 import pisi.unitedmeows.yystal.parallel.ITaskPool;
 import pisi.unitedmeows.yystal.parallel.pools.BasicTaskPool;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
+import pisi.unitedmeows.yystal.ui.YUI;
 import pisi.unitedmeows.yystal.ui.YWindow;
 import pisi.unitedmeows.yystal.utils.IDisposable;
 import pisi.unitedmeows.yystal.utils.Pair;
@@ -34,14 +35,13 @@ public class YYStal {
     private static final HashMap<YSettings, Object> settings;
     private static final Thread mainThread;
     private static final HashMap<String, valuelock<?>> valueLocks;
-    private static final HashMap<Thread, YWindow> windowMap;
+
 
     static {
         mainThread = Thread.currentThread();
         valueLocks = new HashMap<>();
         stopWatchMap = new HashMap<>();
         settings = new HashMap<>();
-        windowMap = new HashMap<>();
         setCurrentPool(new BasicTaskPool(5, 12));
         settings.put(YSettings.TASKWORKER_FETCH_DELAY, 1L);
         settings.put(YSettings.TASKPOOL_CONTROL_CHECK_DELAY, 3L);
@@ -159,11 +159,7 @@ public class YYStal {
     }
 
     public static YWindow currentWindow() {
-        return windowMap.getOrDefault(Thread.currentThread(), null);
-    }
-
-    public static void registerWindow(YWindow window) {
-        windowMap.put(Thread.currentThread(), window);
+        return YUI.currentWindow();
     }
 
     public static <X> out<X> out() {

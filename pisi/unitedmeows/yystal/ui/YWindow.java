@@ -26,6 +26,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
 import pisi.unitedmeows.yystal.YYStal;
+import pisi.unitedmeows.yystal.clazz.event;
 import pisi.unitedmeows.yystal.clazz.prop;
 import pisi.unitedmeows.yystal.exception.YExManager;
 import pisi.unitedmeows.yystal.exception.impl.YexIO;
@@ -33,9 +34,13 @@ import pisi.unitedmeows.yystal.ui.element.IBackground;
 import pisi.unitedmeows.yystal.ui.element.YContainer;
 import pisi.unitedmeows.yystal.ui.element.YElement;
 import pisi.unitedmeows.yystal.ui.element.simple.YBackgroundColor;
+import pisi.unitedmeows.yystal.ui.events.KeyDownEvent;
+import pisi.unitedmeows.yystal.ui.events.KeyUpEvent;
+import pisi.unitedmeows.yystal.ui.events.MouseEvent;
 import pisi.unitedmeows.yystal.ui.font.TTFRenderer;
 import pisi.unitedmeows.yystal.ui.texture.YTexture;
 import pisi.unitedmeows.yystal.ui.utils.*;
+import pisi.unitedmeows.yystal.ui.utils.keyboard.YKeyManager;
 import pisi.unitedmeows.yystal.utils.Vector2f;
 import pisi.unitedmeows.yystal.utils.Vector4;
 import pisi.unitedmeows.yystal.utils.kThread;
@@ -55,11 +60,14 @@ public class YWindow extends YContainer {
 	public static FloatBuffer fbView = BufferUtils.createFloatBuffer(16);
 	public static FloatBuffer fbProjection = BufferUtils.createFloatBuffer(16);
 
-    private Queue<Runnable> executeQueue = new LinkedBlockingQueue<>();
-    private List<YElement> elements = new ArrayList<>();
 
-    public yuiprop<IBackground> background = new yuiprop<IBackground>(
-            this, () -> new YBackgroundColor(Color.WHITE));
+    public event<KeyDownEvent> keyDownEvent = new event<>();
+    public event<KeyUpEvent> keyUpEvent = new event<>();
+    public prop<YElement> focused = new prop<YElement>(this);
+    private float partialTicks;
+
+    private Queue<Runnable> executeQueue = new LinkedBlockingQueue<>();
+    private final YKeyManager keyManager = new YKeyManager();
 
     public yuiprop<Boolean> resizable = new yuiprop<Boolean>(this,
             () -> false) {
@@ -77,7 +85,6 @@ public class YWindow extends YContainer {
             final String newTitle = _value.get();
             value = newTitle;
             executeOnThread(() -> {
-                System.out.println(newTitle);
                 glfwSetWindowTitle(window, newTitle);
             });
         }
@@ -165,15 +172,54 @@ public class YWindow extends YContainer {
             YExManager.pop(new YexIO("Couldn't create the window"));
             return;
         }
-        YYStal.registerWindow(this);
+        YUI.registerWindow(this);
 		glfwMakeContextCurrent(window);
 		GL.createCapabilities();
-        show = true;
+
+        glfwSetWindowSizeCallback(window, (window, width, height)-> {
+            size.setX((float) width);
+            size.setY((float) height);
+            glViewport(0, 0, width,height);
+        });
+
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-				glfwSetWindowShouldClose(window, true);
-			}
+			if (key == GLFW_KEY_ESCAPE) {
+                glfwSetWindowShouldClose(window, true);
+			} else {
+                switch (action) {
+                    case 1: {
+                        keyManager.press(key);
+                        keyDownEvent.fire(key);
+                        break;
+                    }
+                    case 0: {
+                        keyManager.release(key);
+                        keyUpEvent.fire(key);
+                        break;
+                    }
+                }
+            }
 		});
+
+        glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
+
+            if (action == GLFW_PRESS) {
+                focused.set(this);
+                for (YElement element : elements()) {
+                    if (element.isMouseOver(mouseX(), mouseY())) {
+                        System.out.println("mouse over");
+                        element.focus();
+                        focused.set(element);
+                        break;
+                    }
+                }
+
+
+            }
+
+            focused.get().mouseEvent.fire(MouseEvent.Button.parse(button), MouseEvent.Action.parse(action), mods);
+        });
+
 		glfwSetCursorPosCallback(window, new GLFWCursorPosCallback() {
 			@Override
 			public void invoke(final long window, final double xpos, final double ypos) {
@@ -200,119 +246,89 @@ public class YWindow extends YContainer {
 		loop();
 	}
 
-    public void preSetup() {
-        /* find better way for this */
-        /* maybe reflections */
-        if (background.get() != null && background.get() instanceof YElement) {
-            ((YElement) background.get()).container(this);
-            System.out.println("set the container");
-        }
-    }
 
 	public void close() {
 		glfwSetWindowShouldClose(window, true);
 	}
 
-	private TTFRenderer ttfRenderer;
-
 	private void loop() {
-		int glErrCode;
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		double previousTime = glfwGetTime();
-		int frameCount = 0;
-		int lastCalculation = 0;
-		glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		glMatrixMode(GL_PROJECTION);
-		glOrtho(0, width(), height(), 0, 1, -1);
-		glMatrixMode(GL_MODELVIEW);
-		glDisable(GL_TEXTURE_2D);
-		final String fontName = "comfortaa";
-		final Vector4<Float, Float, Float, Float> vector = new Vector4<>(1F, 200F, 1F, 30F);
+        int glErrCode;
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        double previousTime = glfwGetTime();
+        int frameCount = 0;
+        int lastCalculation = 0;
+        glEnableClientState(GL11.GL_VERTEX_ARRAY);
+        glMatrixMode(GL_PROJECTION);
+        glOrtho(0, width(), height(), 0, 1, -1);
+        glMatrixMode(GL_MODELVIEW);
+        glDisable(GL_TEXTURE_2D);
 
-        YTexture texture = null;
-        try {
-            texture = YUI.loadTexture("test", ImageIO.read(new URL("https://avatars.githubusercontent.com/u/78653161?s=200&v=4")));
-        } catch (IOException e) {
-            System.out.println("error");
-            e.printStackTrace();
-        }
         // fontrenderer will generate all sizes from 1 to 100 with increments of .5F
-		// 30F is the default size
-		ttfRenderer = new TTFRenderer(fontName, vector, true);
+        // 30F is the default size
 
+        setup();
         while (!executeQueue.isEmpty()) {
             executeQueue.poll().run();
         }
-        preSetup();
 
-		while (!glfwWindowShouldClose(window)) {
-			if (ttfRenderer == null) {
-				kThread.sleep(5L);
-				System.out.println("waiting for fontrenderer...");
-			} else {
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				glClearColor(255, 255, 255, 1.0F);
-				final int mouseX = mouseCoords.getX().intValue();
-				final int mouseY = mouseCoords.getY().intValue();
-				final double currentTime = glfwGetTime();
-				frameCount++;
-				if (currentTime - previousTime >= 1.0) {
-					lastCalculation = frameCount;
-					frameCount = 0;
-					previousTime = currentTime;
-				}
-				render: {
-                    draw();
-
+        show = true;
+        while (!glfwWindowShouldClose(window)) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClearColor(0, 0, 0, 1.0F);
+            final double currentTime = glfwGetTime();
+            frameCount++;
+            if (currentTime - previousTime >= 1.0) {
+                lastCalculation = frameCount;
+                frameCount = 0;
+                previousTime = currentTime;
+            }
+            partialTicks = (float) (currentTime - previousTime);
+            render:
+            {
+                glPushMatrix();
+                draw();
+                glPopMatrix();
 
 
                 //    ttfRenderer.drawString(String.format("YWindow fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 60, Color.BLACK.getRGB(), false);
-			//		ttfRenderer.drawString(String.format("fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 100, Color.BLACK.getRGB(), false);
-				}
-				glfwPollEvents();
-				glfwSwapBuffers(window);
-				glErrCode = glGetError();
-				if (glErrCode != GL_NO_ERROR) {
-					System.out.printf("OpenGL Error %s %s", glErrCode, System.lineSeparator());
-				}
-			}
+                //		ttfRenderer.drawString(String.format("fps -> %s %s", lastCalculation, Math.round((currentTime - previousTime) * 10) / 10D), 20, 100, Color.BLACK.getRGB(), false);
+            }
+
+            glfwSwapBuffers(window);
+            glErrCode = glGetError();
+            if (glErrCode != GL_NO_ERROR) {
+                System.out.printf("OpenGL Error %s %s", glErrCode, System.lineSeparator());
+            }
             if (!executeQueue.isEmpty()) {
                 executeQueue.poll().run();
             }
-		}
-	}
+            glfwPollEvents();
+        }
+        YUI.unregisterWindow();
+
+        glfwDestroyWindow(window);
+    }
 
 	@Override
 	public void draw() {
-        background.get().draw();
-        for (YElement element : elements) {
-            element.draw();
-        }
+        super.draw();
     }
 
     public void executeOnThread(Runnable runnable) {
         (executeQueue == null ? executeQueue = new LinkedBlockingQueue<>() : executeQueue).add(runnable);
     }
 
-    public void addElement(YElement element) {
-        element.container(this);
-        element.setup();
-        elements.add(element);
-        elements.sort(Comparator.comparingInt(o -> o.zLevel.get()));
-
-    }
 
     @Override
     public void setup() {
-
+        super.setup();
     }
 
     @Override
 	public boolean isMouseOver(final float mouseX, final float mouseY) {
 		return glfwGetWindowAttrib(window, GLFW_FOCUSED) == 1;
 	}
-
 
     @Override
     public float renderX() {
@@ -332,7 +348,11 @@ public class YWindow extends YContainer {
 		return mouseCoords.getY();
 	}
 
-    public List<YElement> elements() {
-        return elements;
+    public float partialTicks() {
+        return partialTicks;
+    }
+
+    public YKeyManager keyManager() {
+        return keyManager;
     }
 }

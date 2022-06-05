@@ -3,11 +3,15 @@ package pisi.unitedmeows.yystal.ui;
 import com.sun.istack.internal.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL12;
+import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.ui.texture.YTexture;
+import pisi.unitedmeows.yystal.utils.Vector2;
+import pisi.unitedmeows.yystal.utils.Vector2f;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -15,11 +19,13 @@ import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 
 public class YUI {
 
+    private static final HashMap<Thread, YWindow> windowMap;
     private static Map<Thread, Map<String, YTexture>> loadedTextures;
     private static final int BYTES_PER_PIXEL = 4;//3 for RGB, 4 for RGBA
 
     static {
         loadedTextures = new HashMap<>();
+        windowMap = new HashMap<Thread, YWindow>();
     }
 
     public static Map<String, YTexture> textureMap() {
@@ -36,6 +42,10 @@ public class YUI {
         final YTexture texture = loadTexture(image);
         textureMap().put(name, texture);
         return texture;
+    }
+
+    public static void freeTexture(int textureId) {
+        glDeleteTextures(textureId);
     }
 
     public static YTexture loadTexture(BufferedImage image){
@@ -78,4 +88,41 @@ public class YUI {
         //Return the texture ID so we can bind it later again
         return new YTexture(textureID);
     }
+
+    public Vector2f mousePosition() {
+        return new Vector2f(mouseX(), mouseY());
+    }
+
+    public static float mouseX() {
+        return YYStal.currentWindow().mouseX();
+    }
+
+    public static float mouseY() {
+        return YYStal.currentWindow().mouseY();
+    }
+
+    public static YWindow currentWindow() {
+        return windowMap.getOrDefault(Thread.currentThread(), null);
+    }
+
+    public static void registerWindow(YWindow window) {
+        windowMap.put(Thread.currentThread(), window);
+    }
+
+    public static boolean unregisterWindow() {
+        return windowMap.remove(Thread.currentThread()) != null;
+    }
+
+    public static boolean unregisterWindow(YWindow window) {
+        Iterator<Map.Entry<Thread, YWindow>> iterator = windowMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Thread, YWindow> entry = iterator.next();
+            if (entry.getValue() == window) {
+                iterator.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

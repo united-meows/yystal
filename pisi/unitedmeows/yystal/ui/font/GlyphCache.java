@@ -1,18 +1,13 @@
 package pisi.unitedmeows.yystal.ui.font;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,6 +17,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.lwjgl.opengl.GL11;
 
@@ -153,6 +149,8 @@ public class GlyphCache {
 	 */
 	private int cacheLineHeight = 0;
 
+
+    static final Pattern pattern = Pattern.compile("jar\\:file\\:/");
 	/**
 	 * This class holds information for a glyph about its pre-rendered image in an OpenGL texture. The
 	 * texture coordinates in this class are normalized in the standard 0.0 - 1.0 OpenGL range.
@@ -205,9 +203,9 @@ public class GlyphCache {
 		// usedFonts.add(new Font(Font.SANS_SERIF, Font.PLAIN, 72)); //size 1 > 72
 	}
 
-	private String getPathFromAssets(final String file) {
-		return "/" + Object.class.getResource(String.format("/pisi/unitedmeows/yystal/ui/assets/%s", file)).toString().substring(6) /* to get rid of file:/ */;
-	}
+	private InputStream getPathFromAssets(final String file) {
+        return this.getClass().getClassLoader().getResourceAsStream(String.format("pisi/unitedmeows/yystal/ui/assets/%s", file));
+    }
 
 	/**
 	 * Change the default font used to pre-render glyph images. If this method is called at runtime, the
@@ -219,19 +217,35 @@ public class GlyphCache {
 	 * @param size the new point size
 	 */
 	void setDefaultFont(final String name, final float size, final boolean antiAlias) {
-		usedFonts.clear();
-		try (InputStream stream = new FileInputStream(new File(getPathFromAssets(name + ".ttf")))) {
-			final Font f = Font.createFont(Font.TRUETYPE_FONT, stream);
-			usedFonts.add(f);
-		}
-		catch (final Exception exception) {
-			usedFonts.add(new Font("Roboto", Font.PLAIN, (int) size));
-			exception.printStackTrace();
-		}
-		fontSize = size;
-		antiAliasEnabled = antiAlias;
-		setRenderingHints();
+		setDefaultFont(getPathFromAssets(name + ".ttf"), size, antiAlias);
 	}
+
+    void setDefaultFont(final InputStream stream, final float size, final boolean antiAlias) {
+        usedFonts.clear();
+        final Font f;
+        try {
+            f = Font.createFont(Font.TRUETYPE_FONT, stream);
+            usedFonts.add(f);
+        } catch (Exception ex) {
+            usedFonts.add(new Font("Roboto", Font.PLAIN, (int) size));
+            ex.printStackTrace();
+        } finally {
+            try { stream.close(); } catch (Exception ex) { ex.printStackTrace(); }
+        }
+
+        fontSize = size;
+        antiAliasEnabled = antiAlias;
+        setRenderingHints();
+    }
+
+    void setDefaultFont(final Font font, final float size, final boolean antiAlias) {
+        usedFonts.clear();
+        usedFonts.add(font);
+
+        fontSize = size;
+        antiAliasEnabled = antiAlias;
+        setRenderingHints();
+    }
 
 	public void clear() {
 		glyphCache.clear();

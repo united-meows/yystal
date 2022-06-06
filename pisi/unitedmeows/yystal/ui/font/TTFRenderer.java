@@ -1,5 +1,7 @@
 package pisi.unitedmeows.yystal.ui.font;
 
+import java.awt.*;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +21,6 @@ public class TTFRenderer {
 
 	public TTFRenderer(String name, Vector4<Float, Float, Float, Float> vector, boolean... antiAliasing) {
 		boolean antiAlias = antiAliasing.length > 0;
-		long ms = System.currentTimeMillis();
 		increment = vector.third();
 		defaultSize = vector.fourth();
 		for (float f = vector.first(); f < vector.second(); f += increment) {
@@ -28,8 +29,37 @@ public class TTFRenderer {
 			caches.put(f, cache);
 		}
 		defaultCache = caches.get(defaultSize);
-		System.out.println(System.currentTimeMillis() - ms);
 	}
+
+    public TTFRenderer(Font font, Vector4<Float, Float, Float, Float> vector, boolean... antiAliasing) {
+        boolean antiAlias = antiAliasing.length > 0;
+        increment = vector.third();
+        defaultSize = vector.fourth();
+        for (float f = vector.first(); f < vector.second(); f += increment) {
+            StringCache cache = new StringCache();
+            cache.setDefaultFont(font, f, antiAlias);
+            caches.put(f, cache);
+        }
+        defaultCache = caches.get(defaultSize);
+    }
+
+    public TTFRenderer(InputStream stream, Vector4<Float, Float, Float, Float> vector, boolean... antiAliasing) {
+        boolean antiAlias = antiAliasing.length > 0;
+        increment = vector.third();
+        defaultSize = vector.fourth();
+        for (float f = vector.first(); f < vector.second(); f += increment) {
+            StringCache cache = new StringCache();
+            cache.setDefaultFont(stream, f, antiAlias);
+            caches.put(f, cache);
+        }
+        defaultCache = caches.get(defaultSize);
+    }
+
+    public float drawStringCentered(String text, double x, double y, int color, final boolean shadow) {
+        float width = width(text);
+        drawString(text, x - width / 2, y, color, shadow);
+        return (float) (x + width / 2);
+    }
 
 	public float drawString(String text, double x, double y, int color, final boolean shadow) {
 		if (text == null) return 0F;

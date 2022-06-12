@@ -3,6 +3,7 @@ package pisi.unitedmeows.yystal.ui.element.simple;
 import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.ui.element.YElement;
 import pisi.unitedmeows.yystal.ui.utils.RenderMethods;
+import pisi.unitedmeows.yystal.ui.utils.Vertex2f;
 import pisi.unitedmeows.yystal.utils.Vector2f;
 
 import java.awt.*;
@@ -19,8 +20,8 @@ public class YBackgroundColor2 extends YElement {
 
     @Override
     public void draw() {
-        Vector2f size = container.size();
-        RenderMethods.drawRect(container.renderX(), container.renderY(), size.getX(), size.getY(), startColor, endColor);
+        Vertex2f size = container.size();
+        RenderMethods.drawRect(container.renderX(), container.renderY(), size.x(), size.y(), startColor, endColor);
     }
 
     @Override

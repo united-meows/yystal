@@ -1,8 +1,10 @@
 package pisi.unitedmeows.yystal.ui.utils;
 
 public class Vertex2f {
+
 	public float x, y;
-	public Vertex2f(float _x, float _y) {
+
+    public Vertex2f(float _x, float _y) {
 		x = _x;
 		y = _y;
 	}

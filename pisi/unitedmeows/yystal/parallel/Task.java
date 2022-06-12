@@ -43,4 +43,12 @@ public class Task {
 	}
 
 
+    public long startTime() {
+        return startTime;
+    }
+
+    @Deprecated public Task startTime(long _startTime) {
+        startTime = _startTime;
+        return this;
+    }
 }

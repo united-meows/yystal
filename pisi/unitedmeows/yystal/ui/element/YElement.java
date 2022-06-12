@@ -14,8 +14,8 @@ public abstract class YElement implements IBackground
 	protected Vertex2f location = new Vertex2f(0, 0);
 
 	private YOrigin origin = YOrigin.TOP_LEFT;
-    protected Vector2f size = new Vector2f(0, 0);
-    protected boolean show;
+    protected Vertex2f size = new Vertex2f(0, 0);
+    protected boolean show = true;
 //    public event<MouseEnterEvent>
 //    public event<MouseLeaveEvent>
 //    public event<ClickEvent>
@@ -61,54 +61,48 @@ public abstract class YElement implements IBackground
 	};
 
     public void setup() {}
+    public void tick() {}
+
+    @Deprecated public void _mouseClick() {}
+    @Deprecated public void _mouseRelease() {}
 
 	public abstract void draw();
 
     public boolean isMouseOver(final float mouseX, final float mouseY) {
-        return mouseX >= renderX() && mouseX <= renderX() + size.getX() && mouseY >= renderY() && mouseY <= renderY() + size.getY();
+        return mouseX >= renderX() && mouseX <= renderX() + size.x() && mouseY >= renderY() && mouseY <= renderY() + size.y();
     }
 
-	public Vertex2f location() {
-		return location;
-	}
+	public Vertex2f location() { return location; }
 
-	public float renderX() {
-		return location.x;
-	}
+	public float renderX() { return container.renderX() + location.x; }
 
-    public float renderY() {
-        return location.y;
-    }
+    public float renderY() { return container.renderY() + location.y; }
 
     public YElement container(YContainer _container) {
         container = _container;
         return this;
     }
 
-    public YContainer container() {
-        return container;
+    public YContainer container() { return container; }
+
+    public YElement instance() { return this; }
+
+    public Vertex2f size() { return size; }
+
+    public YElement size(float _x, float _y) {
+        size.setX(_x);
+        size.setY(_y);
+        return this;
     }
 
-    public YElement instance() {
-		return this;
-	}
-
-    public Vector2f size() {
-        return size;
-    }
-
-    public YElement size(Vector2f _size) {
+    public YElement size(Vertex2f _size) {
         size = _size;
         return this;
     }
 
-    public void show() {
-        show = true;
-    }
+    public void show() { show = true; }
 
-    public void hide() {
-        show = false;
-    }
+    public void hide() { show = false; }
 
     public boolean isShown() {
         return show;
@@ -132,5 +126,11 @@ public abstract class YElement implements IBackground
         location = _location;
         return this;
     }
+
+    public YElement origin(YOrigin _origin) {
+        origin = _origin;
+        return this;
+    }
+
 
 }

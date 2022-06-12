@@ -21,7 +21,7 @@ public class TaskWorker extends Thread {
 	@Override
 	public void run() {
 		running = true;
-		while (isRunning() && YYStal.mainThread().isAlive()) {
+		while (isRunning()) {
 			currentTask = YYStal.taskPool().nextTask();
 			if (currentTask != null) {
 				busy = true;

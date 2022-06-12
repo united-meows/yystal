@@ -5,47 +5,40 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-import java.awt.Color;
-import java.io.IOException;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
-import pisi.unitedmeows.yystal.YYStal;
 import pisi.unitedmeows.yystal.clazz.event;
 import pisi.unitedmeows.yystal.clazz.prop;
 import pisi.unitedmeows.yystal.exception.YExManager;
 import pisi.unitedmeows.yystal.exception.impl.YexIO;
-import pisi.unitedmeows.yystal.ui.element.IBackground;
 import pisi.unitedmeows.yystal.ui.element.YContainer;
 import pisi.unitedmeows.yystal.ui.element.YElement;
 import pisi.unitedmeows.yystal.ui.element.simple.YBackgroundColor;
 import pisi.unitedmeows.yystal.ui.events.KeyDownEvent;
 import pisi.unitedmeows.yystal.ui.events.KeyUpEvent;
 import pisi.unitedmeows.yystal.ui.events.MouseEvent;
-import pisi.unitedmeows.yystal.ui.font.TTFRenderer;
-import pisi.unitedmeows.yystal.ui.texture.YTexture;
+import pisi.unitedmeows.yystal.ui.events.WindowExitEvent;
 import pisi.unitedmeows.yystal.ui.utils.*;
 import pisi.unitedmeows.yystal.ui.utils.keyboard.YKeyManager;
+import pisi.unitedmeows.yystal.utils.Stopwatch;
 import pisi.unitedmeows.yystal.utils.Vector2f;
-import pisi.unitedmeows.yystal.utils.Vector4;
 import pisi.unitedmeows.yystal.utils.kThread;
-
-import javax.imageio.ImageIO;
 
 public class YWindow extends YContainer {
 
@@ -63,11 +56,16 @@ public class YWindow extends YContainer {
 
     public event<KeyDownEvent> keyDownEvent = new event<>();
     public event<KeyUpEvent> keyUpEvent = new event<>();
+    public event<WindowExitEvent> exitEvent = new event<>();
+
     public prop<YElement> focused = new prop<YElement>(this);
     private float partialTicks;
 
     private Queue<Runnable> executeQueue = new LinkedBlockingQueue<>();
     private final YKeyManager keyManager = new YKeyManager();
+
+    private boolean alive;
+    private YElement clickedElement;
 
     public yuiprop<Boolean> resizable = new yuiprop<Boolean>(this,
             () -> false) {
@@ -90,10 +88,9 @@ public class YWindow extends YContainer {
         }
     };
 
-
-
     public YWindow(final int _width, final int _height) {
-        super(new Vertex2f(0, 0), new Vector2f(_width, _height), YOrigin.TOP_LEFT);
+        super(new Vertex2f(0, 0), new Vertex2f(_width, _height), YOrigin.TOP_LEFT);
+        background.set(new YBackgroundColor(new Color(239,235,231)));
     }
 
 	public YWindow(final String _title, final int _width, final int _height) {
@@ -102,6 +99,11 @@ public class YWindow extends YContainer {
 	}
 
 	public void open() {
+        if (!glfwInit()) {
+            YExManager.pop(new YexIO("Can't initialize GLFW"));
+            return;
+        }
+
 		windowThread = new Thread(this::_open);
 		windowThread.start();
 	}
@@ -113,20 +115,20 @@ public class YWindow extends YContainer {
     }
 
 	public int width() {
-		return Math.round(size.getX());
+		return Math.round(size.x());
 	}
 
 	public int height() {
-		return Math.round(size.getY());
+		return Math.round(size.y());
 	}
 
 	public YWindow width(final int _width) {
-		size(_width, size.getY());
+		size(_width, size.y());
 		return this;
 	}
 
 	public YWindow height(final int _height) {
-		size(size.getX(), _height);
+		size(size.x(), _height);
 		return this;
 	}
 
@@ -134,7 +136,7 @@ public class YWindow extends YContainer {
 	public YWindow size(final float _width, final float _height) {
 		size.setX(_width);
 		size.setY(_height);
-		glfwSetWindowSize(window, Math.round(size.getX()), Math.round(size.getY()));
+		glfwSetWindowSize(window, Math.round(size.x()), Math.round(size.y()));
 		return this;
 	}
 
@@ -156,10 +158,6 @@ public class YWindow extends YContainer {
 
 	@SuppressWarnings("resource") // stfu ide
 	private void _open() {
-		if (!glfwInit()) /* todo: throw an exception */
-			return;
-
-
 		glfwDefaultWindowHints();
 		/*
 		 * antialiasing
@@ -180,6 +178,9 @@ public class YWindow extends YContainer {
             size.setX((float) width);
             size.setY((float) height);
             glViewport(0, 0, width,height);
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(0, width(), height(), 0, 1, -1);
         });
 
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
@@ -205,16 +206,20 @@ public class YWindow extends YContainer {
 
             if (action == GLFW_PRESS) {
                 focused.set(this);
+                clickedElement = null;
                 for (YElement element : elements()) {
                     if (element.isMouseOver(mouseX(), mouseY())) {
-                        System.out.println("mouse over");
                         element.focus();
+                        element._mouseClick();
+                        clickedElement = element;
                         focused.set(element);
                         break;
                     }
                 }
-
-
+            } else if (action == GLFW_RELEASE) {
+                if (clickedElement != null && clickedElement.isMouseOver.get()) {
+                    clickedElement._mouseRelease();
+                }
             }
 
             focused.get().mouseEvent.fire(MouseEvent.Button.parse(button), MouseEvent.Action.parse(action), mods);
@@ -272,17 +277,26 @@ public class YWindow extends YContainer {
             executeQueue.poll().run();
         }
 
+        final Stopwatch timer = new Stopwatch();
         show = true;
+        alive = true;
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glClearColor(0, 0, 0, 1.0F);
             final double currentTime = glfwGetTime();
             frameCount++;
+
             if (currentTime - previousTime >= 1.0) {
                 lastCalculation = frameCount;
                 frameCount = 0;
                 previousTime = currentTime;
             }
+
+            if (timer.isReached(200)) {
+                elements().forEach(YElement::tick);
+                timer.reset();
+            }
+
             partialTicks = (float) (currentTime - previousTime);
             render:
             {
@@ -305,9 +319,29 @@ public class YWindow extends YContainer {
             }
             glfwPollEvents();
         }
-        YUI.unregisterWindow();
 
+        YUI.unregisterWindow();
         glfwDestroyWindow(window);
+        executeQueue.clear();
+        alive = false;
+        exitEvent.fire();
+    }
+
+    public void setIcon(BufferedImage image) {
+        executeOnThread(() -> {
+            try {
+                ByteBuffer buffer = YUI.createBufferFromImageARGB(image);
+                GLFWImage.Buffer gb = GLFWImage.create(1);
+                GLFWImage iconGI = GLFWImage.create().set(image.getWidth(), image.getHeight(), buffer);
+                gb.put(0, iconGI);
+
+                glfwSetWindowIcon(window, gb);
+                buffer.clear();
+                gb.free();
+                iconGI.free();
+            } catch (Exception ex) {
+            }
+        });
     }
 
 	@Override
@@ -319,7 +353,6 @@ public class YWindow extends YContainer {
         (executeQueue == null ? executeQueue = new LinkedBlockingQueue<>() : executeQueue).add(runnable);
     }
 
-
     @Override
     public void setup() {
         super.setup();
@@ -329,6 +362,10 @@ public class YWindow extends YContainer {
 	public boolean isMouseOver(final float mouseX, final float mouseY) {
 		return glfwGetWindowAttrib(window, GLFW_FOCUSED) == 1;
 	}
+
+    public boolean isClosed() {
+        return !alive;
+    }
 
     @Override
     public float renderX() {
@@ -354,5 +391,9 @@ public class YWindow extends YContainer {
 
     public YKeyManager keyManager() {
         return keyManager;
+    }
+
+    public long rawWindow() {
+        return window;
     }
 }

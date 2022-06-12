@@ -7,6 +7,7 @@ import pisi.unitedmeows.yystal.utils.YRandom;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -21,7 +22,7 @@ public class event<X extends delegate> {
 	public void fire(Object... params) {
 		for (Pair<delegate, Method> bound : delegateMap.values()) {
 			try {
-				bound.item2().invoke(bound.item1(), params);
+                bound.item2().invoke(bound.item1(), params);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}

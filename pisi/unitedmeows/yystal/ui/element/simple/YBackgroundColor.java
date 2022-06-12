@@ -15,8 +15,8 @@ public class YBackgroundColor extends YElement {
 
     @Override
     public void draw() {
-        RenderMethods.drawRect(container.renderX(), container.renderY(), container.renderX() + container.size().getX(),
-                container.renderY() + container.size().getY(), color);
+        RenderMethods.drawRect(container.renderX(), container.renderY(), container.renderX() + container.size().x(),
+                container.renderY() + container.size().y(), color);
     }
 
     @Override

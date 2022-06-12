@@ -5,6 +5,7 @@ import pisi.unitedmeows.yystal.ui.YUI;
 import pisi.unitedmeows.yystal.ui.element.YElement;
 import pisi.unitedmeows.yystal.ui.texture.YTexture;
 import pisi.unitedmeows.yystal.ui.utils.RenderMethods;
+import pisi.unitedmeows.yystal.ui.utils.Vertex2f;
 import pisi.unitedmeows.yystal.utils.Vector2f;
 
 import java.awt.*;
@@ -15,7 +16,7 @@ public class YImageBox extends YElement {
     private YTexture imageTexture;
 
     public YImageBox() {
-        size(new Vector2f(100, 100));
+        size(new Vertex2f(100, 100));
     }
 
     public prop<BufferedImage> image = new prop<BufferedImage>(null) {
@@ -35,8 +36,8 @@ public class YImageBox extends YElement {
     @Override
     public void draw() {
         if (imageTexture != null)
-            RenderMethods.drawRect(renderX(), renderY(), renderX() + size().getX(),
-                    renderY() + size().getY(), Color.GREEN.getRGB());
+            RenderMethods.drawRect(renderX(), renderY(), renderX() + size().x(),
+                    renderY() + size().y(), Color.GREEN.getRGB());
     }
 
 }

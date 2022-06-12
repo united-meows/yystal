@@ -16,52 +16,76 @@ import pisi.unitedmeows.yystal.utils.Vector4;
 // TODO getWidth, getHeight, line seperation...
 public class TTFRenderer {
 	public final Map<Float, StringCache> caches = new HashMap<>();
-	public final Float defaultSize , increment;
+	public final float defaultSize , increment;
 	public final StringCache defaultCache;
 
-	public TTFRenderer(String name, Vector4<Float, Float, Float, Float> vector, boolean... antiAliasing) {
-		boolean antiAlias = antiAliasing.length > 0;
-		increment = vector.third();
-		defaultSize = vector.fourth();
-		for (float f = vector.first(); f < vector.second(); f += increment) {
-			StringCache cache = new StringCache();
-			cache.setDefaultFont(name, f, antiAlias);
-			caches.put(f, cache);
-		}
-		defaultCache = caches.get(defaultSize);
-	}
-
-    public TTFRenderer(Font font, Vector4<Float, Float, Float, Float> vector, boolean... antiAliasing) {
-        boolean antiAlias = antiAliasing.length > 0;
-        increment = vector.third();
-        defaultSize = vector.fourth();
-        for (float f = vector.first(); f < vector.second(); f += increment) {
+    public TTFRenderer(String name, float _sizeStart, float _maxSize, float _increment, float _defaultSize, boolean _antiAlias) {
+        defaultSize = _defaultSize;
+        increment = _increment;
+        for (float f = _sizeStart; f < _maxSize; f += increment) {
             StringCache cache = new StringCache();
-            cache.setDefaultFont(font, f, antiAlias);
+            cache.setDefaultFont(name, f, _antiAlias);
             caches.put(f, cache);
         }
         defaultCache = caches.get(defaultSize);
     }
 
-    public TTFRenderer(InputStream stream, Vector4<Float, Float, Float, Float> vector, boolean... antiAliasing) {
-        boolean antiAlias = antiAliasing.length > 0;
-        increment = vector.third();
-        defaultSize = vector.fourth();
-        for (float f = vector.first(); f < vector.second(); f += increment) {
+    public TTFRenderer(Font font,float _sizeStart, float _maxSize, float _increment, float _defaultSize, boolean _antiAlias) {
+        defaultSize = _defaultSize;
+        increment = _increment;
+        for (float f = _sizeStart; f < _maxSize; f += increment) {
             StringCache cache = new StringCache();
-            cache.setDefaultFont(stream, f, antiAlias);
+            cache.setDefaultFont(font, f, _antiAlias);
             caches.put(f, cache);
         }
         defaultCache = caches.get(defaultSize);
     }
 
-    public float drawStringCentered(String text, double x, double y, int color, final boolean shadow) {
+    public TTFRenderer(InputStream stream, float _sizeStart, float _maxSize, float _increment, float _defaultSize, boolean _antiAlias) {
+        defaultSize = _defaultSize;
+        increment = _increment;
+        for (float f = _sizeStart; f < _maxSize; f += increment) {
+            StringCache cache = new StringCache();
+            cache.setDefaultFont(stream, f, _antiAlias);
+            caches.put(f, cache);
+        }
+        defaultCache = caches.get(defaultSize);
+    }
+
+    public float drawStringCentered(String text, double x, double y, int color) {
         float width = width(text);
-        drawString(text, x - width / 2, y, color, shadow);
+        drawString(text, x - width / 2, y, color);
         return (float) (x + width / 2);
     }
 
-	public float drawString(String text, double x, double y, int color, final boolean shadow) {
+    public float drawStringCentered(String text, double x, double y, int color, DrawType type) {
+        float width = width(text);
+        drawString(text, x - width / 2, y, color, type);
+        return (float) (x + width / 2);
+    }
+
+    public float drawString(String text, double x, double y, int color, DrawType type) {
+        switch (type) {
+            case NORMAL: {
+                return drawString(text, x, y, color);
+            }
+            case SHADOW_THIN: {
+                drawString(text, x + 1, y + 1, color & 0xFF000000);
+                return drawString(text, x, y, color);
+            }
+            case SHADOW_THICK: {;
+                drawString(text, x - 1, y - 1, color & 0xFF000000);
+                drawString(text, x - 1, y + 1, color & 0xFF000000);
+                drawString(text, x + 1, y - 1, color & 0xFF000000);
+                drawString(text, x + 1, y + 1, color & 0xFF000000);
+                return drawString(text, x, y, color);
+            }
+        }
+
+        return 0;
+    }
+
+	public float drawString(String text, double x, double y, int color) {
 		if (text == null) return 0F;
 		text = text.replace("\u0000", "null_char");
 		x -= 1;
@@ -71,9 +95,7 @@ public class TTFRenderer {
 		if ((color & 0xFC000000) == 0) {
 			color |= -16777216;
 		}
-		if (shadow) {
-			color = (color & 0xFCFCFC) >> 2 | color & 0xFF000000;
-		}
+
 		float scale = GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX);
 		float calculate = increment * (Math.round((defaultSize * scale) / increment));
 		StringCache current = caches.getOrDefault(calculate, defaultCache);
@@ -160,5 +182,15 @@ public class TTFRenderer {
         final Entry entry = current.cacheString(text);
         final double antiAlias = scale * 2D;
         return (float) entry.advance;
+    }
+
+    public Float defaultSize() {
+        return defaultSize;
+    }
+
+    public enum DrawType {
+        NORMAL,
+        SHADOW_THIN,
+        SHADOW_THICK
     }
 }

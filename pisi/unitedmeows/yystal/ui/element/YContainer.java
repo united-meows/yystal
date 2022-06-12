@@ -21,16 +21,28 @@ public class YContainer extends YElement {
 
 	protected YOrigin origin;
 	private final List<YElement> elements;
-    public prop<IBackground> background = new prop<>(new YBackgroundColor(Color.WHITE));
+    private YContainer instance;
 
-	public YContainer(Vertex2f _location, Vector2f _size, YOrigin _origin) {
+    public prop<IBackground> background = new prop<IBackground>(new YBackgroundColor(Color.WHITE)) {
+        @Override
+        public void set(IBackground newValue) {
+            super.set(newValue);
+            if (newValue instanceof YElement) {
+                ((YElement) background.get()).container(instance);
+                ((YElement) background.get()).setup();
+            }
+        }
+    };
+
+	public YContainer(Vertex2f _location, Vertex2f _size, YOrigin _origin) {
 		location = _location;
 		size = _size;
 		origin = _origin;
 		elements = new ArrayList<>();
+        instance = this;
 	}
 
-    public YContainer(Vertex2f _location, Vector2f _size) {
+    public YContainer(Vertex2f _location, Vertex2f _size) {
         this(_location, _size, YOrigin.TOP_LEFT);
     }
 

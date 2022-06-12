@@ -7,6 +7,7 @@ import pisi.unitedmeows.yystal.clazz.delegate;
 import java.util.HashMap;
 import java.util.Map;
 
+@FunctionalInterface
 public interface MouseEvent extends delegate {
 
     void onMouseClick(Button button, Action action, int mods);

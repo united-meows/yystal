@@ -13,6 +13,8 @@ import pisi.unitedmeows.yystal.hook.YString;
 import pisi.unitedmeows.yystal.logger.impl.YLogger;
 import pisi.unitedmeows.yystal.parallel.ITaskPool;
 import pisi.unitedmeows.yystal.parallel.pools.BasicTaskPool;
+import pisi.unitedmeows.yystal.parallel.repeaters.Repeater;
+import pisi.unitedmeows.yystal.parallel.repeaters.RepeaterPool;
 import pisi.unitedmeows.yystal.sql.YSQLCommand;
 import pisi.unitedmeows.yystal.ui.YUI;
 import pisi.unitedmeows.yystal.ui.YWindow;
@@ -23,8 +25,7 @@ import pisi.unitedmeows.yystal.utils.Types;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -35,6 +36,9 @@ public class YYStal {
     private static final HashMap<YSettings, Object> settings;
     private static final Thread mainThread;
     private static final HashMap<String, valuelock<?>> valueLocks;
+
+    private static final RepeaterPool repeaterPool;
+    private static List<IDisposable> disposables;
 
 
     static {
@@ -48,6 +52,11 @@ public class YYStal {
         settings.put(YSettings.TASK_AWAIT_DELAY, 1L);
         settings.put(YSettings.TCP_CLIENT_QUEUE_CHECK_DELAY, 1L);
         settings.put(YSettings.TCP_CLIENT_WRITE_DELAY, 12L);
+
+        repeaterPool = new RepeaterPool();
+        disposables = new ArrayList<>();
+
+        disposables.add(repeaterPool);
     }
 
     public static void setCurrentPool(ITaskPool taskPool) {
@@ -97,6 +106,10 @@ public class YYStal {
 
     public static <X> ref<X> reference(X initValue) {
         return new ref<X>(initValue);
+    }
+
+    public static <X> ref<X> reference() {
+        return new ref<X>();
     }
 
     public static <F, S> Pair<F, S> pair(F first, S second) {
@@ -150,6 +163,10 @@ public class YYStal {
         return true;
     }
 
+    public static Repeater repeater(int time) {
+        return repeaterPool.createRepeater(time);
+    }
+
     public static YLogger createLogger(Class<?> clazz) {
         return new YLogger(clazz);
     }
@@ -178,6 +195,15 @@ public class YYStal {
 
     public static ITaskPool taskPool() {
         return currentPool;
+    }
+
+    public static RepeaterPool repeaterPool() {
+        return repeaterPool;
+    }
+
+    public static void free() {
+        disposables.forEach(IDisposable::close);
+        disposables.clear();
     }
 
 }

@@ -34,7 +34,7 @@ public class YBackgroundImage extends YElement {
 
     @Override
     public void draw() {
-        RenderMethods.drawImage(textureId, container.renderX(), container.renderY(), container.size().getX(), container.size().getY());
+          RenderMethods.drawImage(textureId, container.renderX(), container.renderY(), container.size().x(), container.size().y());
     }
 
     @Override

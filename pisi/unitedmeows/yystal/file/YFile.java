@@ -12,7 +12,7 @@ public class YFile {
 
 	private String path;
 	private File file;
-	
+
 	public YFile(String _path) {
 		this(new File(_path));
 	}
@@ -26,15 +26,16 @@ public class YFile {
 		this(new File(_directory, _fileName));
 	}
 
-	public void create() {
+	public YFile create() {
 		try {
 			file.createNewFile();
 		} catch (IOException e) {
 			YYStal.pop(new YexIO("Couldn't create a new file PATH: " + path));
 		}
+        return this;
 	}
 
-	public void writeAll(String input) {
+	public YFile writeAll(String input) {
 		try {
 			FileWriter myWriter = new FileWriter(file);
 			myWriter.write(input);
@@ -42,27 +43,30 @@ public class YFile {
 		} catch (IOException ex) {
 			YYStal.pop(new YexIO("Error while YFile:writeAll (couldn't write to file)"));
 		}
+        return this;
 	}
 
-	public void writeAll(List<String> input) {
+	public YFile writeAll(List<String> input) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < input.size(); i++) {
 			stringBuilder.append(input.get(i));
 			stringBuilder.append(System.lineSeparator());
 		}
 		writeAll(stringBuilder.toString());
+        return this;
 	}
 
-	public void writeAll(String[] input) {
+	public YFile writeAll(String[] input) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < input.length; i++) {
 			stringBuilder.append(input[i]);
 			stringBuilder.append(System.lineSeparator());
 		}
 		writeAll(stringBuilder.toString());
+        return this;
 	}
 
-	public void write(List<String> input) {
+	public YFile write(List<String> input) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < input.size(); i++) {
 			stringBuilder.append(input.get(i));
@@ -70,9 +74,10 @@ public class YFile {
 		}
 
 		write(stringBuilder.toString());
+        return this;
 	}
 
-	public void write(String[] input) {
+	public YFile write(String[] input) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < input.length; i++) {
 			stringBuilder.append(input[i]);
@@ -80,9 +85,10 @@ public class YFile {
 		}
 
 		write(stringBuilder.toString());
+        return this;
 	}
 
-	public void write(String input) {
+	public YFile write(String input) {
 		try {
 			FileWriter myWriter = new FileWriter(file, true);
 
@@ -91,6 +97,7 @@ public class YFile {
 		} catch (IOException ex) {
 			YYStal.pop(new YexIO("Error while YFile:write (couldn't write to file)"));
 		}
+        return this;
 	}
 
 	public List<String> readAllLines()

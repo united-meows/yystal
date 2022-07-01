@@ -1,5 +1,9 @@
 # yystal
-  library for features that java needs (beta)
+  library for features that java needs (beta)	
+
+  temp note:
+  huge amount of unnecessary lwjgl jars are in yystals maven rn will be fixed
+
 ## maven
   Add this as a repository:
 ```xml 

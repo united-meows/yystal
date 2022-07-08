@@ -1,6 +1,5 @@
 package pisi.unitedmeows.yystal.ui;
 
-import com.sun.istack.internal.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL12;
 import pisi.unitedmeows.yystal.YYStal;
@@ -30,8 +29,7 @@ public class YUI {
         return loadedTextures.compute(Thread.currentThread(), (thread, stringYTextureMap) ->
             new HashMap<String, YTexture>());
     }
-
-    @Nullable
+   
     public static YTexture texture(String name) {
         return textureMap().getOrDefault(name, null);
     }
@@ -159,5 +157,5 @@ public class YUI {
         }
         return false;
     }
-
+    
 }

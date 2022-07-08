@@ -18,7 +18,7 @@ After that you can add:
 		<dependency>
 			<groupId>com.github.unitedmeows</groupId>
 			<artifactId>yystal</artifactId>
-			<version>1.15</version>
+			<version>1.1.5</version>
 		</dependency> 
 ```
    to your pom.xml.

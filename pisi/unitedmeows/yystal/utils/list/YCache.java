@@ -1,6 +1,5 @@
 package pisi.unitedmeows.yystal.utils.list;
 
-import com.sun.istack.internal.Nullable;
 import pisi.unitedmeows.yystal.parallel.Async;
 import pisi.unitedmeows.yystal.utils.list.cache.YCacheNode;
 
@@ -78,7 +77,6 @@ public class YCache<K, V> implements Map<K, V> {
     }
 
     @Override
-    @Nullable
     public V get(Object key) {
         YCacheNode<K, V> current = head;
         while (current != null) {
@@ -116,7 +114,6 @@ public class YCache<K, V> implements Map<K, V> {
     }
 
     @Override
-    @Nullable
     public V remove(Object key) {
         YCacheNode<K, V> current = head;
 
@@ -136,7 +133,6 @@ public class YCache<K, V> implements Map<K, V> {
     }
 
     @Override
-    @Nullable
     public void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<?, ?> k : m.entrySet()) {
             YCacheNode<K, V> node = new YCacheNode<>();

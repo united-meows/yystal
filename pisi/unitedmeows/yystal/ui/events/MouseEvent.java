@@ -1,6 +1,5 @@
 package pisi.unitedmeows.yystal.ui.events;
 
-import com.sun.istack.internal.Nullable;
 import org.lwjgl.glfw.GLFW;
 import pisi.unitedmeows.yystal.clazz.delegate;
 
@@ -38,7 +37,6 @@ public interface MouseEvent extends delegate {
             id = _id;
         }
 
-        @Nullable
         public static Button parse(int key) {
             return map.getOrDefault(key, null);
         }
@@ -69,7 +67,6 @@ public interface MouseEvent extends delegate {
             return id;
         }
 
-        @Nullable
         public static Action parse(int key) {
             return map.getOrDefault(key, null);
         }

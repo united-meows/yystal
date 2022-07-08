@@ -10,7 +10,7 @@
 		<repository>
 			<id>united-meows</id>
 			<name>united-meows custom repo</name>
-			<url>http://185.77.3.221:8080/</url>
+			<url>http://185.77.3.221:8080/releases</url>
 		</repository>
 ```
 After that you can add:
